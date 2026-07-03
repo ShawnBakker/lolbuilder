@@ -13,4 +13,5 @@ export {
   type QDataPayload,
 } from "./graph.js";
 export { extractBaseline, extractGameLength, extractMatchups } from "./extract.js";
+export { extractBuilds } from "./builds.js";
 export { extractSynergy } from "./synergy.js";

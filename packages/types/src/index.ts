@@ -101,6 +101,39 @@ export interface GameLengthData {
   timeWin: TimeBuckets;
 }
 
+/** One item option for a build slot, with its sample. */
+export interface BuildSlotOption {
+  id: number;
+  wr: number;
+  n: number;
+}
+
+/** An ordered item set (start pair, core triple) with its sample. */
+export interface BuildSet {
+  set: number[];
+  wr: number;
+  n: number;
+}
+
+/** One build recommendation column (the site's "highest win" or "most picked"). */
+export interface BuildVariant {
+  start: BuildSet;
+  core: BuildSet;
+  options: {
+    item4: BuildSlotOption[];
+    item5: BuildSlotOption[];
+    item6: BuildSlotOption[];
+  };
+}
+
+/** Champion-level builds. Matchup-conditioned (vs-route) builds are validated
+ * to exist but are architecturally undeliverable in v1 (no CORS, no pre-scrape
+ * at pair scale, no server) — v2's local LCU helper is the delivery path. */
+export interface ChampionBuilds {
+  win: BuildVariant;
+  pick: BuildVariant;
+}
+
 /** One champion in the pipeline's roster manifest. */
 export interface ChampionRef {
   cid: ChampionId;
@@ -122,6 +155,8 @@ export interface Shard {
   /** Per-opponent-lane matchup tables (vslane variants) — AC-3's data. */
   matchupsVsLane: Record<Lane, MatchupRow[]>;
   synergy: Partial<Record<Lane, SynergyRow[]>>;
+  /** Champion-level item builds (M6a). Optional: pre-M6a shards lack it. */
+  builds?: ChampionBuilds;
 }
 
 /** A champion assigned to a lane on the draft board. */

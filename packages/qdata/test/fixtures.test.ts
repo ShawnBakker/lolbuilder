@@ -10,6 +10,7 @@ import { BUCKET_INDICES, LANES } from "@lolbuilder/types";
 import {
   assertUniformRefEncoding,
   extractBaseline,
+  extractBuilds,
   extractGameLength,
   extractMatchups,
   extractSynergy,
@@ -70,6 +71,30 @@ describe("baseline stats (build payloads)", () => {
     const b = extractBaseline(parsePayload(load("lulu-build.q-data.json")));
     expect(b.cid).toBe(117);
     expect(b.lane).toBe("support");
+  });
+});
+
+describe("champion builds (build payloads, M6a)", () => {
+  for (const name of ["aatrox-build.q-data.json", "lulu-build.q-data.json"]) {
+    it(`${name}: win + pick variants with plausible sets`, () => {
+      const b = extractBuilds(parsePayload(load(name)));
+      for (const variant of [b.win, b.pick]) {
+        expect(variant.start.set.length).toBeGreaterThan(0);
+        expect(variant.core.set.length).toBeGreaterThanOrEqual(3);
+        expect(variant.core.wr).toBeGreaterThan(35);
+        expect(variant.core.wr).toBeLessThan(75);
+        expect(variant.core.n).toBeGreaterThan(50);
+        expect(variant.options.item4.length).toBeGreaterThan(0);
+        for (const o of [...variant.options.item4, ...variant.options.item5, ...variant.options.item6]) {
+          expect(Number.isInteger(o.id)).toBe(true);
+          expect(o.n).toBeGreaterThanOrEqual(1);
+        }
+      }
+    });
+  }
+
+  it("fails loudly when no pick/win pair exists (e.g. a counters payload)", () => {
+    expect(() => extractBuilds(parsePayload(load("aatrox-counters.q-data.json")))).toThrowError(/builds-pair/);
   });
 });
 

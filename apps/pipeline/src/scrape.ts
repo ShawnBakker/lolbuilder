@@ -8,7 +8,7 @@
  * scoring has real cross-lane cells (spec AC-3 data dependency).
  */
 import { LANES, type ChampionRef, type Lane, type MatchupRow, type Shard } from "@lolbuilder/types";
-import { extractBaseline, extractGameLength, extractMatchups, extractSynergy, parsePayload } from "@lolbuilder/qdata";
+import { extractBaseline, extractBuilds, extractGameLength, extractMatchups, extractSynergy, parsePayload } from "@lolbuilder/qdata";
 import { buildUrl, countersUrl, synergyUrl } from "./config.js";
 import type { PoliteFetcher } from "./fetcher.js";
 
@@ -21,6 +21,7 @@ export async function scrapeChampion(fetcher: PoliteFetcher, champ: ChampionRef,
     throw new Error(`cid mismatch for slug "${champ.slug}": manifest ${champ.cid}, payload ${baseline.cid}`);
   }
   const gameLength = extractGameLength(build);
+  const builds = extractBuilds(build);
 
   const matchups = extractMatchups(parsePayload(await fetcher.json(countersUrl(champ.slug))));
   const matchupsVsLane = {} as Record<Lane, MatchupRow[]>;
@@ -30,5 +31,5 @@ export async function scrapeChampion(fetcher: PoliteFetcher, champ: ChampionRef,
 
   const synergy = extractSynergy(await fetcher.json(synergyUrl(champ.slug, patch)));
 
-  return { champ, patch, baseline, gameLength, matchups, matchupsVsLane, synergy };
+  return { champ, patch, baseline, gameLength, builds, matchups, matchupsVsLane, synergy };
 }
