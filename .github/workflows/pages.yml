@@ -10,6 +10,10 @@ on:
       - "packages/types/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
+    inputs:
+      expected_generated_at:
+        description: "Manifest generatedAt the compose step must observe (race guard)"
+        default: ""
 
 permissions:
   contents: read
@@ -41,6 +45,7 @@ jobs:
       - name: Compose dataset into site (PC-6 fallback — Pages is the frontend read path)
         env:
           GH_TOKEN: ${{ github.token }}
+          EXPECTED: ${{ inputs.expected_generated_at || '' }}
         run: |
           set -euo pipefail
           TAG=$(gh release list --repo "$GITHUB_REPOSITORY" --json tagName \
@@ -49,9 +54,22 @@ jobs:
             echo "no data release yet — deploying site without dataset"; exit 0
           fi
           PATCH="${TAG#data-}"
-          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern shards.zip --dir /tmp/data
+          # Race guard: --clobber asset replacement is not read-your-writes.
+          # When the pipeline told us what to expect, retry until we see it.
+          for attempt in 1 2 3 4 5 6; do
+            rm -rf /tmp/data && mkdir -p /tmp/data
+            gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern shards.zip --dir /tmp/data
+            unzip -q /tmp/data/shards.zip -d /tmp/data/unzipped
+            GOT=$(jq -r .generatedAt /tmp/data/unzipped/manifest.json)
+            if [ -z "$EXPECTED" ] || [ "$GOT" = "$EXPECTED" ]; then
+              echo "dataset $PATCH generatedAt=$GOT (attempt $attempt)"; break
+            fi
+            if [ "$attempt" = "6" ]; then
+              echo "::error::stale dataset after 6 attempts: got $GOT, expected $EXPECTED"; exit 1
+            fi
+            echo "stale download (got $GOT, expected $EXPECTED) — retrying"; sleep 10
+          done
           mkdir -p "apps/web/dist/data/$PATCH"
-          unzip -q /tmp/data/shards.zip -d /tmp/data/unzipped
           mv /tmp/data/unzipped/shards/* "apps/web/dist/data/$PATCH/"
           mv /tmp/data/unzipped/manifest.json apps/web/dist/data/manifest.json
           echo "composed dataset $PATCH ($(ls apps/web/dist/data/$PATCH | wc -l) shards)"

@@ -114,4 +114,6 @@ jobs:
         if: inputs.limit == ''
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY"
+        run: |
+          GEN=$(jq -r .generatedAt apps/pipeline/dist/manifest.json)
+          gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" -f expected_generated_at="$GEN"
