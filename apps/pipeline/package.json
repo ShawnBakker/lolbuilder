@@ -10,5 +10,8 @@
   "dependencies": {
     "@lolbuilder/qdata": "workspace:*",
     "@lolbuilder/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.0"
   }
 }
