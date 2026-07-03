@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { DraftState, Shard } from "@lolbuilder/types";
-import { PHASE_FLOOR_N, phaseBreakdown, selectCells } from "../src/index.js";
+import { PHASE_FLOOR_N, phaseBreakdown, scorePick, selectCells } from "../src/index.js";
 
 const buckets = (vals: number[]) =>
   Object.fromEntries(vals.map((v, i) => [String(i + 1), v])) as Record<
@@ -72,5 +72,18 @@ describe("selectCells (Gap B / AC-3)", () => {
 
   it("refuses a shard for the wrong champion", () => {
     expect(() => selectCells(draft, shard(7))).toThrow(/cid 7/);
+  });
+
+  it("a missing cell is structurally absent from the rating — not a shrunk-to-baseline ghost", () => {
+    // Same draft with and without the unmatched enemy (cid 902 has no cell):
+    // the ratings must be IDENTICAL, proving exclusion, not silent defaulting.
+    const without: DraftState = { ...draft, enemies: draft.enemies.filter((e) => e.cid !== 902) };
+    const s = shard(1);
+    const withMissing = scorePick(selectCells(draft, s));
+    const withoutEnemy = scorePick(selectCells(without, s));
+    expect(withMissing.rating).toBe(withoutEnemy.rating);
+    expect(withMissing.components).toEqual(withoutEnemy.components);
+    expect(withMissing.missing).toEqual([{ kind: "matchup", cid: 902 }]);
+    expect(withoutEnemy.missing).toEqual([]);
   });
 });

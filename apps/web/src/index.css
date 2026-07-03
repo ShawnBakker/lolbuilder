@@ -4,6 +4,7 @@ body { margin: 0; background: #14181f; color: #dde3ea; }
 h1 { margin-bottom: 0; }
 .sub { color: #8b96a5; margin-top: 0.25rem; }
 .banner { background: #4a2e12; border: 1px solid #a06a2c; padding: 0.6rem 1rem; border-radius: 6px; margin: 0.75rem 0; }
+.banner.soft { background: #262c35; border-color: #3d4756; color: #a7b1bd; }
 .boards { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
 .board h2 { font-size: 1rem; color: #8b96a5; }
 .slot { display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.5rem; border: 1px solid #2a3340; border-radius: 6px; margin-bottom: 0.35rem; cursor: pointer; }

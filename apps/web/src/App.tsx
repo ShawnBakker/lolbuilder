@@ -27,7 +27,10 @@ function useBoard(): number {
 
 export default function App() {
   const [manifest, setManifest] = useState<Manifest | null>(null);
-  const [staleInfo, setStaleInfo] = useState<{ stale: boolean; livePatch: string } | null>(null);
+  // undefined = check pending; null = check UNVERIFIABLE (warn softly — a
+  // stale dataset during a DDragon outage must not look confirmed-fresh);
+  // object = verified (banner only if actually stale). AC-18, conscious call.
+  const [staleInfo, setStaleInfo] = useState<{ stale: boolean; livePatch: string } | null | undefined>(undefined);
   const [selected, setSelected] = useState<{ side: BoardSlot["side"]; index: number }>({ side: "ally", index: 0 });
   const [query, setQuery] = useState("");
   const [dataVersion, setDataVersion] = useState(0);
@@ -86,6 +89,11 @@ export default function App() {
       {staleInfo?.stale && (
         <div className="banner">
           Dataset is patch {manifest.patch} but live is {staleInfo.livePatch} — numbers below are stale until the pipeline catches up.
+        </div>
+      )}
+      {staleInfo === null && (
+        <div className="banner soft">
+          Couldn't verify dataset freshness (version check unreachable) — patch {manifest.patch} data may or may not be current.
         </div>
       )}
 
