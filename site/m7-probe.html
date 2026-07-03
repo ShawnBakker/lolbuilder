@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>lolbuilder — M7 mixed-content probe</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 44rem; margin: 4rem auto; padding: 0 1rem; line-height: 1.5; }
+    code { background: rgba(127,127,127,.15); padding: .1em .3em; border-radius: 3px; }
+    .r { padding: .75rem 1rem; border-radius: 6px; border: 1px solid rgba(127,127,127,.4); margin: .5rem 0; }
+    .pass { border-color: #2e7d32; }
+    .fail { border-color: #c62828; }
+  </style>
+</head>
+<body>
+  <h1>M7 probe: https page → http localhost helper</h1>
+  <p>Answers m7-lcu-brainstorm §8 Q1: can this https Pages origin fetch a local helper?
+     Requires <code>node tools/m7-probe-helper.mjs</code> running first.</p>
+  <div class="r" id="r-127">127.0.0.1 — running…</div>
+  <div class="r" id="r-localhost">localhost — running…</div>
+  <p id="ua" style="font-size:.85rem;color:#888"></p>
+  <script>
+    document.getElementById("ua").textContent = navigator.userAgent;
+    const probe = async (host, el) => {
+      const url = `http://${host}:27437/health`;
+      try {
+        const t0 = performance.now();
+        const res = await fetch(url);
+        const body = await res.json();
+        el.textContent = `PASS — ${host}: HTTP ${res.status}, ${JSON.stringify(body)} (${Math.round(performance.now() - t0)}ms)`;
+        el.className = "r pass";
+      } catch (err) {
+        el.textContent = `FAIL — ${host}: ${err.name}: ${err.message} (a bare TypeError usually means blocked by mixed-content or local-network policy; check the console for the specific reason)`;
+        el.className = "r fail";
+      }
+    };
+    probe("127.0.0.1", document.getElementById("r-127"));
+    probe("localhost", document.getElementById("r-localhost"));
+  </script>
+</body>
+</html>
