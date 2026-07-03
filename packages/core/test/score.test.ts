@@ -89,9 +89,12 @@ describe("scorePick properties", () => {
     expect(s.confidence).toEqual({ minN: 150, level: "low" });
   });
 
-  it("API names the composite `rating` and exposes no probability field", () => {
+  it("API surface is a closed set — the framing invariant can't erode by addition", () => {
+    // AC-13 guard: PickScore's keys are EXACTLY this set. Adding any field
+    // (winChance, probability, pct, ...) fails this test and forces the
+    // framing question to be answered consciously, not by drift.
     const s = scorePick(cellsWith(55, 500)) as unknown as Record<string, unknown>;
-    expect("rating" in s).toBe(true);
-    expect(Object.keys(s).some((k) => /prob/i.test(k))).toBe(false);
+    expect(Object.keys(s).sort()).toEqual(["components", "confidence", "missing", "rating"]);
+    expect(Object.keys(s.confidence as object).sort()).toEqual(["level", "minN"]);
   });
 });

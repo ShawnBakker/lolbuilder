@@ -7,13 +7,24 @@ re-emission for unchanged champions).
 
 ## OI-3 — d1/d2 semantics: RESOLVED (empirically, stronger than the research prose)
 
-- **Matchup d1 = vsWr − allWr, exactly.** Verified over all **63,972**
-  production matchup rows (default + all vslane tables, 172 champions):
-  zero rows deviate (max |error| 0.0000 at payload precision).
-- **Matchup d2 = d1 − c(champion)**: the offset is constant per champion
-  (spread ≤ 0.1pp within a champion) with c ≈ championWr′ − 50, where
-  championWr′ sits ~1.8pp above the emerald+ default-lane baseline —
-  the exact normalizing population is unidentified.
+- **Matchup d1 = vsWr − allWr, exactly** over all **63,972** production
+  matchup rows (default + all vslane tables, 172 champions; max |error|
+  0.0000 at payload precision). **Provenance caveat (post-review check):**
+  this is a *stored-field relationship* — the three fields are arithmetically
+  linked on lolalytics' side — not an independent re-derivation of their
+  formula. `allWr` is NOT simply the opponent's own overall WR (median
+  |allWr − opponent's own baseline wr| = 4.18pp, p90 7.10pp, across 7,500
+  n≥300 rows — far beyond population drift, which measures ~0.5pp on the
+  synergy side); its exact population is unidentified. What the exact match
+  DOES establish, and what OI-3 needed: d1's scale is percentage points,
+  categorically not logit.
+- **Matchup d2 = d1 − c(champion), and c is (approximately) the n-weighted
+  mean of the champion's own d1**: the identity holds within 0.15pp for
+  150/172 champions, worst 0.232pp. So d2 is the matchup delta relative to
+  the champion's average delta across opponents ("normalized expected WR"
+  in the research prose). The residual is consistent with floor truncation —
+  rows under the source's 100-game floor contribute to their true weighted
+  mean but are invisible to us. Status: explained, still unconsumed.
 - **Synergy d1 ≈ duoWr − teammate's overall WR** (median |error| 0.47pp,
   p90 1.19pp against the nearest available proxy — teammates' default-lane
   emerald+ baselines, n≥500 rows, lane-matched). Same percentage-point family.
