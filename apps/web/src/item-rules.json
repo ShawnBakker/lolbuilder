@@ -1,0 +1,75 @@
+{
+  "comment": "AC-20: rules are data. Triggers evaluated by @lolbuilder/core evaluateItemRules; explanations ship with each recommendation. championFlags is the small curated table (well-known kits, coarse by design); damage skew comes from measured shard damage profiles, not this table. Item ids resolve against Data Dragon at render — unknown ids are dropped, the rule still shows.",
+  "rules": [
+    {
+      "id": "anti-heal",
+      "trigger": { "kind": "healersAtLeast", "count": 2 },
+      "items": [3076, 3123, 3165],
+      "explanation": "Two or more sustain-heavy enemies: buy Grievous Wounds early, not as a 5th item."
+    },
+    {
+      "id": "anti-shield",
+      "trigger": { "kind": "shieldersAtLeast", "count": 2 },
+      "items": [6695],
+      "explanation": "Shield-stacked enemy team: shield-cutting (AD only) or focus the shielder first."
+    },
+    {
+      "id": "tenacity",
+      "trigger": { "kind": "ccHeavyAtLeast", "count": 2 },
+      "items": [3111, 6035],
+      "explanation": "Layered hard CC: tenacity is worth more than raw stats here."
+    },
+    {
+      "id": "mr-skew",
+      "trigger": { "kind": "apShareAtLeast", "share": 0.55 },
+      "items": [3111, 3155, 3156],
+      "explanation": "Enemy damage skews magic: prioritize magic resist in your defensive slots."
+    },
+    {
+      "id": "armor-skew",
+      "trigger": { "kind": "adShareAtLeast", "share": 0.68 },
+      "items": [3047, 3075, 3143],
+      "explanation": "Enemy damage skews physical: prioritize armor in your defensive slots."
+    }
+  ],
+  "championFlags": {
+    "16": { "heals": true },
+    "37": { "heals": true },
+    "267": { "heals": true },
+    "350": { "heals": true },
+    "147": { "heals": true, "shields": true },
+    "8": { "heals": true },
+    "50": { "heals": true },
+    "517": { "heals": true },
+    "19": { "heals": true },
+    "36": { "heals": true },
+    "266": { "heals": true },
+    "2": { "heals": true },
+    "223": { "heals": true },
+    "203": { "heals": true },
+    "141": { "heals": true },
+    "40": { "shields": true },
+    "43": { "shields": true },
+    "117": { "shields": true },
+    "902": { "shields": true },
+    "427": { "shields": true },
+    "61": { "shields": true },
+    "98": { "shields": true },
+    "526": { "shields": true, "ccHeavy": true },
+    "89": { "ccHeavy": true },
+    "111": { "ccHeavy": true },
+    "412": { "ccHeavy": true },
+    "25": { "ccHeavy": true },
+    "127": { "ccHeavy": true },
+    "113": { "ccHeavy": true },
+    "32": { "ccHeavy": true },
+    "90": { "ccHeavy": true },
+    "72": { "ccHeavy": true },
+    "57": { "ccHeavy": true },
+    "154": { "ccHeavy": true },
+    "12": { "ccHeavy": true },
+    "497": { "ccHeavy": true },
+    "3": { "ccHeavy": true },
+    "54": { "ccHeavy": true }
+  }
+}

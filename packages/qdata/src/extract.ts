@@ -63,7 +63,7 @@ export function extractGameLength(payload: QDataPayload): GameLengthData {
   return { time, timeWin };
 }
 
-const BASELINE_KEYS = ["cid", "lane", "defaultLane", "patch", "wr", "avgWr", "pr", "br", "n"] as const;
+const BASELINE_KEYS = ["cid", "lane", "defaultLane", "patch", "wr", "avgWr", "pr", "br", "n", "damage"] as const;
 
 /**
  * Champion baseline stats from a build-route payload.
@@ -91,7 +91,14 @@ export function extractBaseline(payload: QDataPayload): BaselineStats {
   if (typeof raw["patch"] !== "string" || !/^\d{2}\.\d{1,2}$/.test(raw["patch"])) {
     violate("baseline-patch", `patch resolved to "${String(raw["patch"])}"`);
   }
-  return raw as unknown as BaselineStats;
+  const damage = materialize(payload, hosts[0]!["damage"], "$.baseline.damage");
+  if (!isPlainObject(damage)) violate("baseline-damage", "damage did not materialize to an object");
+  for (const k of ["physical", "magic", "true"]) {
+    if (typeof damage[k] !== "number" || !Number.isFinite(damage[k])) {
+      violate("baseline-damage", `damage.${k} resolved to ${typeof damage[k]}`);
+    }
+  }
+  return { ...raw, damage } as unknown as BaselineStats;
 }
 
 const MATCHUP_KEYS = ["cid", "vsWr", "n", "d1", "d2", "allWr", "defaultLane"] as const;

@@ -3,6 +3,8 @@ import { LANES, type ChampionRef, type Lane } from "@lolbuilder/types";
 import { K_PHASE, phaseBreakdown, scorePick, selectCells, type PickScore } from "@lolbuilder/core";
 import { checkStale, getLoaded, getLoadedVersion, loadManifest, subscribeLoaded, trackLoaded, type Manifest } from "./data.js";
 import { DISCLOSURE, describeConfidence, ratingToPct, tierFor } from "./display.js";
+import { BuildPanel } from "./BuildPanel.js";
+import { loadItems } from "./items.js";
 import { ManualProvider, type BoardSlot } from "./provider.js";
 
 const provider = new ManualProvider();
@@ -36,6 +38,7 @@ export default function App() {
   useEffect(() => {
     void loadManifest().then(async (m) => {
       setManifest(m);
+      loadItems(m.ddragon);
       setStaleInfo(await checkStale(m.patch));
     });
   }, []);
@@ -228,6 +231,8 @@ export default function App() {
           </table>
         </section>
       )}
+
+      {pickShard && draft && <BuildPanel shard={pickShard} draft={draft} byCid={byCid} />}
 
       <footer>
         <h3>What this can't tell you</h3>

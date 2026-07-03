@@ -7,3 +7,4 @@ export { logitPct, shrinkWr } from "./math.js";
 export { phaseBreakdown, type PhaseBreakdown, type PhaseRate } from "./phase.js";
 export { DEFAULT_CONFIG, scorePick, type PickScore, type RateCell, type ScoreCells, type ScoreComponent, type ScoreConfig } from "./score.js";
 export { selectCells, type ShardIndex } from "./select.js";
+export { evaluateItemRules, type EnemyProfile, type ItemRecommendation, type ItemRule, type RuleTrigger } from "./itemrules.js";

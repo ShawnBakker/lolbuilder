@@ -72,6 +72,13 @@ describe("baseline stats (build payloads)", () => {
     expect(b.cid).toBe(117);
     expect(b.lane).toBe("support");
   });
+
+  it("damage profiles are measured and directionally sane (aatrox AD, lulu AP)", () => {
+    const aatrox = extractBaseline(parsePayload(load("aatrox-build.q-data.json"))).damage!;
+    const lulu = extractBaseline(parsePayload(load("lulu-build.q-data.json"))).damage!;
+    expect(aatrox.physical).toBeGreaterThan(aatrox.magic * 3);
+    expect(lulu.magic).toBeGreaterThan(lulu.physical * 3);
+  });
 });
 
 describe("champion builds (build payloads, M6a)", () => {

@@ -65,6 +65,14 @@ export interface MatchupRow {
   defaultLane: Lane;
 }
 
+/** Average per-game damage by type (from the build payload). Drives the
+ * AP/AD-skew itemization rules — measured, not inferred from tags. */
+export interface DamageProfile {
+  physical: number;
+  magic: number;
+  true: number;
+}
+
 /** Champion baseline stats from the build-route payload (default lane). */
 export interface BaselineStats {
   cid: ChampionId;
@@ -79,6 +87,8 @@ export interface BaselineStats {
   pr: number;
   br: number;
   n: number;
+  /** Optional: pre-M6b shards lack it. */
+  damage?: DamageProfile;
 }
 
 export const BUCKET_INDICES = ["1", "2", "3", "4", "5", "6", "7"] as const;
