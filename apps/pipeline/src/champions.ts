@@ -20,7 +20,11 @@ export interface Roster {
 }
 
 /** DDragon-key → lolalytics-slug overrides, evidence-only (see module doc). */
-const SLUG_OVERRIDES: Record<string, string> = {};
+const SLUG_OVERRIDES: Record<string, string> = {
+  // 2026-07-03 full run: monkeyking → HTTP 404; wukong → 200 with cid 62
+  // hand-verified against DDragon's MonkeyKing key (62).
+  MonkeyKing: "wukong",
+};
 
 export async function fetchRoster(fetcher: PoliteFetcher): Promise<Roster> {
   const versions = (await fetcher.json("https://ddragon.leagueoflegends.com/api/versions.json")) as string[];

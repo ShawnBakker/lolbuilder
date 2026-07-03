@@ -40,11 +40,13 @@ jobs:
           fi
           # Cadence invariant (AC-5): ≤2 full scrapes per patch cycle —
           # 1 on patch change + 1 refresh at day ≥7, tracked in the release.
-          if ! REL=$(gh release view "data-$PATCH" --repo "$GITHUB_REPOSITORY" --json createdAt,body 2>/dev/null); then
+          if ! REL=$(gh release view "data-$PATCH" --repo "$GITHUB_REPOSITORY" --json publishedAt,body 2>/dev/null); then
             echo "run_type=full" >> "$GITHUB_OUTPUT"
             echo "no data-$PATCH release -> full run"; exit 0
           fi
-          CREATED=$(echo "$REL" | jq -r .createdAt)
+          # publishedAt, not createdAt: createdAt is the tag commit's date and
+          # can predate the actual publish by arbitrary amounts.
+          CREATED=$(echo "$REL" | jq -r .publishedAt)
           AGE_DAYS=$(( ( $(date +%s) - $(date -d "$CREATED" +%s) ) / 86400 ))
           if [ "$AGE_DAYS" -ge 7 ] && ! echo "$REL" | jq -r .body | grep -q "refreshed:"; then
             echo "run_type=refresh" >> "$GITHUB_OUTPUT"
