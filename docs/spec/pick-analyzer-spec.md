@@ -83,16 +83,16 @@ Rule-based layer over F4's build output: anti-heal ≥2 healers, MR/armor skew v
 
 - PC-1: ✅ DONE (2026-07-02 review probe 4): counters q-data HTTP 200, 81 matchup rows {cid, vsWr, n, d1, d2, allWr, defaultLane}, min n=101 (100-game floor corroborated).
 - PC-2: ◐ PARTIAL — op.gg MCP existence confirmed via external sources at `mcp-api.op.gg/mcp`; remaining: verify it carries matchup/build-level data (fallback #2 is only real if it does).
-- PC-3: u.gg DevTools pattern capture (documents fallback #1).
+- PC-3: ✅ RESOLVED (2026-07-03, upgraded): fallback #1 documented via the maintained `uggo-ugg-api` client instead of a one-time endpoint capture — see `docs/analysis/pc3-resolution.md`.
 - PC-4: ✅ DONE (review probe 5): lulu build q-data same graph structure, same time/timeWin shape and semantics.
-- PC-5: Register Riot personal API key (product description: private draft-analysis tool, small friend group; discloses future LCU champ-select reads + low-volume Match-V5 for own results).
+- PC-5: ✅ APPROVED (2026-07-03, standard approval, no App Note filed). Registration surfaced an explicit policy conflict with D2/D3's sourcing — documented as a risk-language correction in `docs/decisions/policy-conflict-amendment.md`, no engineering change.
 - PC-6: ✅ DONE (2026-07-03) — **FAIL, fallback activated**: no `access-control-allow-origin` on Release-asset downloads (verified via GET with Pages Origin across the redirect chain; live browser harness at the Pages placeholder page shows the same). AC-7 amended: Pages branch is the frontend read path, Releases the archive.
 - PC-7: ✅ DONE (2026-07-03, run 28643994930) — dry-run from GitHub Actions (Azure northcentralus): 3 champions fetched (build + counters q-data + synergy mega), deserialized, invariant-validated, shards emitted (aatrox 81 matchups/645 synergy rows; lulu 71/627; jinx 52/661). Weekly drift canary also green from Actions (run 28643996255). D5's IP-class assumption replicated on GH's actual egress.
 
 ## 6. Open items
 
 - OI-1: ✅ RESOLVED AS RELATIVE (2026-07-03) — the payload carries no minute labels (string-scan), so phase labels stay relative per AC-15; optional browser unlock documented in `docs/analysis/m3-m4-verification.md`.
-- OI-2: License — PolyForm Noncommercial (reckon pattern) vs MIT (Roguemouse pattern). Portfolio-signaling call, operator's.
+- OI-2: ✅ DECIDED (2026-07-03, operator): **MIT** — license file added at the v1.0.0 tag.
 - OI-3: ✅ RESOLVED (2026-07-03, empirically): matchup d1 = vsWr − allWr **exactly** across all 63,972 production rows — a stored-field relationship (their arithmetic), establishing d1's percentage-point scale; allWr's exact population is unidentified (it is *not* the opponent's own overall WR). d2 = d1 minus ≈ the champion's n-weighted mean d1 (150/172 within 0.15pp) — explained, unconsumed. Engine consumes raw (wr, n) and derives its own logit deltas; d1 is UI-explanation only. Record: `docs/analysis/m3-m4-verification.md`. *(The reinforcing exhibit stands: an external LLM review summed d1/d2 as logit addends — wrong by construction.)*
 - OI-4: ✅ RESOLVED (2026-07-03): sweep over {10,25,50}² showed a plateau across the whole grid (top-1 20/20 everywhere) — ordering-insensitive, so constants follow D8's structural rationale: k_matchup=25, k_synergy=50, named and tunable. Record: `docs/analysis/m3-m4-verification.md`.
 
