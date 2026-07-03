@@ -93,7 +93,12 @@ A six-probe adversarial review (Claude Code, from repo, distinct datacenter cont
 claims and upgraded three findings:
 1. **tier filter proven to FILTER, not just parse**: jungle Lee Sin n=7,905 at emerald_plus vs 21,680 at all, same patch.
 2. **vslane empirically confirmed** (was search-level only): `?vslane=middle` flips route state + opponent set, min n=110.
-3. **Interning is mixed within a payload**: identical row shapes carry literal numbers in some rows, base-36 refs in
-   others — deserializer must resolve at leaf level; fixtures must cover both modes. `time`/`timeWin` are objects
+3. **Leaf encoding — CORRECTED 2026-07-03 at fixture capture.** The review initially reported "mixed literal/ref
+   interning within a payload." That was an *inference* from a NaN (equally explained by all-ref rows), stated as an
+   observation — the exact failure mode CLAUDE.md's validation discipline names. Fixture-scale scanning refuted it:
+   across 8 payloads × 2 capture days (~33k container slots), every object field and array element is a clean,
+   in-range, canonical base-36 ref; primitives (numbers/strings/booleans) exist only as top-level `_objs` entries.
+   Deserializer consequences unchanged (resolve every leaf, single hop; invariants post-resolution) plus one stronger
+   invariant gained: any non-string container slot is a format violation → drift alarm. `time`/`timeWin` are objects
    keyed "1"–"7" (not arrays). Counters rows: {cid, vsWr, n, d1, d2, allWr, defaultLane}, min n=101.
 The "VPS should re-confirm" framing earlier in this file is obsolete — no VPS exists in the locked architecture (see spec §3).

@@ -6,7 +6,7 @@ Full context: `docs/brainstorm/pick-analyzer-brainstorm.md` (decisions), `docs/b
 ## Process — HARD RULES
 
 - Every feature follows /brainstorm → /spec → /plan → /implement → /review, one doc per phase in `docs/`. **No implementation code before its spec exists.** If asked to skip, push back once, citing this line.
-- Validation discipline: define pass criteria BEFORE running any test or probe. One observation ≠ validation (cache artifacts, cached CDN responses, and lucky 200s are all documented instances in this repo's history). Verify one flagged positive AND one flagged negative by hand before trusting any measurement tool's output.
+- Validation discipline: define pass criteria BEFORE running any test or probe. One observation ≠ validation (cache artifacts, cached CDN responses, lucky 200s, and a reviewer inference stated as observation — the refuted "mixed interning" claim, 2026-07 — are all documented instances in this repo's history). Verify one flagged positive AND one flagged negative by hand before trusting any measurement tool's output.
 - Never add a test outside the CI gate.
 
 ## Data sources — HARD RULES
@@ -28,7 +28,7 @@ Full context: `docs/brainstorm/pick-analyzer-brainstorm.md` (decisions), `docs/b
 
 ## Normalizer — HARD RULES
 
-- The q-data deserializer (Qwik `_objs` + base-36 refs) must **resolve refs at leaf level**: interning is mixed within a single payload — identical row shapes carry literal numbers in some rows and base-36 refs in others (observed 2026-07-02; produces NaNs if leaves go unresolved). Golden fixtures must cover both interning modes.
+- The q-data deserializer (Qwik `_objs` + base-36 refs) must **resolve refs at leaf level, single hop**: every container slot (object field, array element) is a base-36 ref; primitives exist only as top-level `_objs` entries (verified across 8 payloads / 2 capture days; an earlier "mixed literal/ref" claim was an inference and was refuted at fixture scale, 2026-07-03). Unresolved leaves produce NaNs downstream. Any non-string container slot is a format violation → schema-change alarm.
 - Deserializer invariants **fail loudly and run post-resolution** (pre-resolution type checks false-alarm on ref leaves): root `_entry` resolves; `time`/`timeWin` present as objects keyed `"1"`–`"7"` — **not arrays** — with numeric games/wins, wins ≤ games; expected `team_h` columns. Golden-fixture tests in CI. Parser failure is a schema-change alarm, never a recoverable warning. Corrupt shards must not reach the scoring engine.
 
 ## Sub-agents
