@@ -1,0 +1,13 @@
+{
+  "name": "@lolbuilder/pipeline",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@lolbuilder/qdata": "workspace:*",
+    "@lolbuilder/types": "workspace:*"
+  }
+}
