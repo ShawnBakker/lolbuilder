@@ -1,0 +1,27 @@
+:root { color-scheme: dark; font-family: system-ui, sans-serif; }
+body { margin: 0; background: #14181f; color: #dde3ea; }
+.wrap { max-width: 60rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+h1 { margin-bottom: 0; }
+.sub { color: #8b96a5; margin-top: 0.25rem; }
+.banner { background: #4a2e12; border: 1px solid #a06a2c; padding: 0.6rem 1rem; border-radius: 6px; margin: 0.75rem 0; }
+.boards { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+.board h2 { font-size: 1rem; color: #8b96a5; }
+.slot { display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.5rem; border: 1px solid #2a3340; border-radius: 6px; margin-bottom: 0.35rem; cursor: pointer; }
+.slot.sel { border-color: #5a8dd6; background: #1b2330; }
+.slot select { background: #1b212b; color: inherit; border: 1px solid #2a3340; border-radius: 4px; }
+.slot .who { flex: 1; }
+.slot em { color: #5d6875; }
+.slot button { background: none; border: none; color: #8b96a5; cursor: pointer; }
+.search input { width: 100%; padding: 0.5rem 0.75rem; background: #1b212b; color: inherit; border: 1px solid #2a3340; border-radius: 6px; box-sizing: border-box; }
+.results { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+.results button { background: #223047; color: inherit; border: 1px solid #33456a; border-radius: 6px; padding: 0.3rem 0.7rem; cursor: pointer; }
+.panel { margin-top: 1.5rem; border: 1px solid #2a3340; border-radius: 8px; padding: 1rem; }
+.panel h2 { margin-top: 0; }
+.conf { font-size: 0.8rem; font-weight: normal; color: #8b96a5; }
+table { border-collapse: collapse; margin: 0.5rem 0 1rem; }
+td, th { padding: 0.25rem 0.9rem 0.25rem 0; text-align: left; color: #c6cdd6; }
+th { color: #8b96a5; font-weight: normal; }
+.missing { color: #c9a15e; font-size: 0.9rem; }
+footer { margin-top: 2.5rem; color: #8b96a5; font-size: 0.9rem; }
+footer h3 { color: #a7b1bd; }
+@media (max-width: 640px) { .boards { grid-template-columns: 1fr; } }

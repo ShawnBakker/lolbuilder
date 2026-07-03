@@ -34,6 +34,13 @@ export type Phase = keyof typeof PHASE_BUCKETS;
  */
 export const PHASE_FLOOR_N = 100;
 
+/**
+ * Shrinkage for phase aggregates (AC-16 "same shrinkage discipline").
+ * Phase cells have no source floor (bucket 1 can be tiny for low-PR champs),
+ * so they get the synergy-grade k.
+ */
+export const K_PHASE = 50;
+
 /** Confidence tiers from the min sample size across consumed cells (AC-12). */
 export const CONFIDENCE_LEVELS = [
   { min: 1000, level: "high" },

@@ -1,0 +1,74 @@
+/**
+ * The DraftStateProvider seam (spec AC-1): DraftState is produced ONLY
+ * through this interface. ManualProvider (the clickable board) is the sole
+ * v1 implementation; LcuProvider implements the same contract in v2 —
+ * that is the entire reason this file exists.
+ */
+import type { DraftState, Lane, SlotRef } from "@lolbuilder/types";
+
+export interface DraftStateProvider {
+  /** Current draft, or null while no pick champion is assigned. */
+  getDraftState(): DraftState | null;
+  /** Fires on every board change; returns an unsubscribe. */
+  subscribe(listener: () => void): () => void;
+}
+
+export interface BoardSlot {
+  side: "ally" | "enemy";
+  index: number; // 0–4 per side; ally 0 is the pick slot
+  lane: Lane;
+  cid: number | null;
+}
+
+const DEFAULT_LANES: Lane[] = ["top", "jungle", "middle", "bottom", "support"];
+
+export class ManualProvider implements DraftStateProvider {
+  #slots: BoardSlot[];
+  #listeners = new Set<() => void>();
+
+  constructor() {
+    this.#slots = (["ally", "enemy"] as const).flatMap((side) =>
+      DEFAULT_LANES.map((lane, index) => ({ side, index, lane, cid: null })),
+    );
+  }
+
+  slots(): readonly BoardSlot[] {
+    return this.#slots;
+  }
+
+  assign(side: BoardSlot["side"], index: number, cid: number | null): void {
+    const slot = this.#slots.find((s) => s.side === side && s.index === index);
+    if (slot) {
+      slot.cid = cid;
+      this.#emit();
+    }
+  }
+
+  setLane(side: BoardSlot["side"], index: number, lane: Lane): void {
+    const slot = this.#slots.find((s) => s.side === side && s.index === index);
+    if (slot) {
+      slot.lane = lane;
+      this.#emit();
+    }
+  }
+
+  getDraftState(): DraftState | null {
+    const pickSlot = this.#slots.find((s) => s.side === "ally" && s.index === 0);
+    if (!pickSlot?.cid) return null;
+    const ref = (s: BoardSlot): SlotRef => ({ cid: s.cid!, lane: s.lane });
+    return {
+      pick: ref(pickSlot),
+      allies: this.#slots.filter((s) => s.side === "ally" && s.index > 0 && s.cid !== null).map(ref),
+      enemies: this.#slots.filter((s) => s.side === "enemy" && s.cid !== null).map(ref),
+    };
+  }
+
+  subscribe(listener: () => void): () => void {
+    this.#listeners.add(listener);
+    return () => this.#listeners.delete(listener);
+  }
+
+  #emit(): void {
+    for (const l of this.#listeners) l();
+  }
+}
