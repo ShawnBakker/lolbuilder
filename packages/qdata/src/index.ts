@@ -12,5 +12,5 @@ export {
   assertUniformRefEncoding,
   type QDataPayload,
 } from "./graph.js";
-export { extractGameLength, extractMatchups } from "./extract.js";
+export { extractBaseline, extractGameLength, extractMatchups } from "./extract.js";
 export { extractSynergy } from "./synergy.js";

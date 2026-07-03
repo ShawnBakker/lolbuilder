@@ -25,6 +25,23 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - name: Compose dataset into site (PC-6 fallback — Pages is the frontend read path)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG=$(gh release list --repo "$GITHUB_REPOSITORY" --json tagName \
+            -q '[.[] | select(.tagName | startswith("data-"))][0].tagName' || true)
+          if [ -z "$TAG" ]; then
+            echo "no data release yet — deploying site without dataset"; exit 0
+          fi
+          PATCH="${TAG#data-}"
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern shards.zip --dir /tmp/data
+          mkdir -p "site/data/$PATCH"
+          unzip -q /tmp/data/shards.zip -d /tmp/data/unzipped
+          mv /tmp/data/unzipped/shards/* "site/data/$PATCH/"
+          mv /tmp/data/unzipped/manifest.json site/data/manifest.json
+          echo "composed dataset $PATCH ($(ls site/data/$PATCH | wc -l) shards)"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

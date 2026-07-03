@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "dry-run": "tsx src/dry-run.ts"
+    "dry-run": "tsx src/dry-run.ts",
+    "scrape": "tsx src/run.ts"
   },
   "dependencies": {
     "@lolbuilder/qdata": "workspace:*",

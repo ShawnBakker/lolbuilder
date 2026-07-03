@@ -9,6 +9,7 @@ import { describe, expect, it } from "vitest";
 import { BUCKET_INDICES, LANES } from "@lolbuilder/types";
 import {
   assertUniformRefEncoding,
+  extractBaseline,
   extractGameLength,
   extractMatchups,
   extractSynergy,
@@ -52,6 +53,24 @@ describe("game-length buckets (build payloads)", () => {
       expect(wr).toBeLessThan(0.6);
     });
   }
+});
+
+describe("baseline stats (build payloads)", () => {
+  it("aatrox: cid 266, top, plausible rates", () => {
+    const b = extractBaseline(parsePayload(load("aatrox-build.q-data.json")));
+    expect(b.cid).toBe(266);
+    expect(b.lane).toBe("top");
+    expect(b.patch).toMatch(/^\d{2}\.\d{1,2}$/);
+    expect(b.n).toBeGreaterThan(1000);
+    expect(b.wr).toBeGreaterThan(40);
+    expect(b.wr).toBeLessThan(60);
+  });
+
+  it("lulu: cid 117, support", () => {
+    const b = extractBaseline(parsePayload(load("lulu-build.q-data.json")));
+    expect(b.cid).toBe(117);
+    expect(b.lane).toBe("support");
+  });
 });
 
 describe("matchup tables (counters payloads)", () => {

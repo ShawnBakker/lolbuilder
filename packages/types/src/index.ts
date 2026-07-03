@@ -65,6 +65,22 @@ export interface MatchupRow {
   defaultLane: Lane;
 }
 
+/** Champion baseline stats from the build-route payload (default lane). */
+export interface BaselineStats {
+  cid: ChampionId;
+  /** Lane the payload describes — v1 fetches the champion's default lane. */
+  lane: Lane;
+  defaultLane: Lane;
+  /** lolalytics patch the stats belong to (e.g. "16.13"). */
+  patch: string;
+  /** Win rate %, average opponent WR %, pick rate %, ban rate %, games. */
+  wr: number;
+  avgWr: number;
+  pr: number;
+  br: number;
+  n: number;
+}
+
 export const BUCKET_INDICES = ["1", "2", "3", "4", "5", "6", "7"] as const;
 export type BucketIndex = (typeof BUCKET_INDICES)[number];
 

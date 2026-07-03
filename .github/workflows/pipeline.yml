@@ -1,0 +1,113 @@
+name: Pipeline
+
+on:
+  schedule:
+    - cron: "23 7 * * *" # daily version check; scrapes only when trigger rules say so
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Override trigger logic"
+        type: choice
+        options: [auto, full, refresh]
+        default: auto
+      limit:
+        description: "Champion limit (TEST MODE: skips publishing)"
+        default: ""
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  decide:
+    runs-on: ubuntu-latest
+    outputs:
+      run_type: ${{ steps.decide.outputs.run_type }}
+      patch: ${{ steps.decide.outputs.patch }}
+    steps:
+      - id: decide
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FORCE: ${{ inputs.force || 'auto' }}
+        run: |
+          set -euo pipefail
+          DD=$(curl -s https://ddragon.leagueoflegends.com/api/versions.json | jq -r '.[0]')
+          PATCH=$(echo "$DD" | cut -d. -f1-2)
+          echo "patch=$PATCH" >> "$GITHUB_OUTPUT"
+          if [ "$FORCE" != "auto" ]; then
+            echo "run_type=$FORCE" >> "$GITHUB_OUTPUT"
+            echo "forced: $FORCE (patch $PATCH)"; exit 0
+          fi
+          # Cadence invariant (AC-5): ≤2 full scrapes per patch cycle —
+          # 1 on patch change + 1 refresh at day ≥7, tracked in the release.
+          if ! REL=$(gh release view "data-$PATCH" --repo "$GITHUB_REPOSITORY" --json createdAt,body 2>/dev/null); then
+            echo "run_type=full" >> "$GITHUB_OUTPUT"
+            echo "no data-$PATCH release -> full run"; exit 0
+          fi
+          CREATED=$(echo "$REL" | jq -r .createdAt)
+          AGE_DAYS=$(( ( $(date +%s) - $(date -d "$CREATED" +%s) ) / 86400 ))
+          if [ "$AGE_DAYS" -ge 7 ] && ! echo "$REL" | jq -r .body | grep -q "refreshed:"; then
+            echo "run_type=refresh" >> "$GITHUB_OUTPUT"
+            echo "release is ${AGE_DAYS}d old, no refresh yet -> refresh run"; exit 0
+          fi
+          echo "run_type=none" >> "$GITHUB_OUTPUT"
+          echo "nothing to do (age ${AGE_DAYS}d)"
+
+  scrape:
+    needs: decide
+    if: needs.decide.outputs.run_type != 'none'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Restore fetch cache
+        uses: actions/cache/restore@v4
+        with:
+          path: apps/pipeline/.cache
+          key: qcache-${{ needs.decide.outputs.patch }}-${{ needs.decide.outputs.run_type }}
+      - name: Scrape
+        run: pnpm --filter @lolbuilder/pipeline run scrape ${{ inputs.limit && format('--limit {0}', inputs.limit) || '' }}
+      - name: Save fetch cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: apps/pipeline/.cache
+          key: qcache-${{ needs.decide.outputs.patch }}-${{ needs.decide.outputs.run_type }}-${{ github.run_id }}
+      - name: Bundle
+        run: |
+          cd apps/pipeline/dist
+          zip -qr shards.zip shards manifest.json
+      - name: Upload test artifact (test mode)
+        if: inputs.limit != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: shards-test
+          path: apps/pipeline/dist/shards.zip
+      - name: Publish release
+        if: inputs.limit == ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PATCH: ${{ needs.decide.outputs.patch }}
+          RUN_TYPE: ${{ needs.decide.outputs.run_type }}
+        run: |
+          set -euo pipefail
+          cd apps/pipeline/dist
+          if [ "$RUN_TYPE" = "full" ] && ! gh release view "data-$PATCH" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "data-$PATCH" --repo "$GITHUB_REPOSITORY" \
+              --title "Dataset $PATCH" --notes "Per-champion shards for patch $PATCH."
+          fi
+          gh release upload "data-$PATCH" shards.zip manifest.json --clobber --repo "$GITHUB_REPOSITORY"
+          if [ "$RUN_TYPE" = "refresh" ]; then
+            BODY=$(gh release view "data-$PATCH" --repo "$GITHUB_REPOSITORY" --json body -q .body)
+            gh release edit "data-$PATCH" --repo "$GITHUB_REPOSITORY" --notes "$BODY"$'\n'"refreshed: $(date -u +%F)"
+          fi
+      - name: Deploy Pages with fresh data
+        if: inputs.limit == ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY"

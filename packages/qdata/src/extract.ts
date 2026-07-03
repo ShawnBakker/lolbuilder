@@ -8,6 +8,7 @@
 import {
   BUCKET_INDICES,
   LANES,
+  type BaselineStats,
   type GameLengthData,
   type Lane,
   type MatchupRow,
@@ -60,6 +61,37 @@ export function extractGameLength(payload: QDataPayload): GameLengthData {
     }
   }
   return { time, timeWin };
+}
+
+const BASELINE_KEYS = ["cid", "lane", "defaultLane", "patch", "wr", "avgWr", "pr", "br", "n"] as const;
+
+/**
+ * Champion baseline stats from a build-route payload.
+ * Invariants: exactly one object carries the signature; numeric fields finite;
+ * lanes known; patch matches the 16.NN shape.
+ */
+export function extractBaseline(payload: QDataPayload): BaselineStats {
+  const hosts = payload.objs.filter(
+    (o): o is Record<string, unknown> => isPlainObject(o) && BASELINE_KEYS.every((k) => k in o),
+  );
+  if (hosts.length !== 1) {
+    violate("baseline-host", `expected exactly 1 baseline stats object, found ${hosts.length}`);
+  }
+  const raw = Object.fromEntries(BASELINE_KEYS.map((k) => [k, materialize(payload, hosts[0]![k], `$.baseline.${k}`)]));
+  for (const k of ["cid", "wr", "avgWr", "pr", "br", "n"] as const) {
+    if (typeof raw[k] !== "number" || !Number.isFinite(raw[k])) {
+      violate("baseline-numeric", `${k} resolved to ${typeof raw[k]}`);
+    }
+  }
+  for (const k of ["lane", "defaultLane"] as const) {
+    if (!LANES.includes(raw[k] as Lane)) {
+      violate("baseline-lane", `${k} resolved to "${String(raw[k])}"`);
+    }
+  }
+  if (typeof raw["patch"] !== "string" || !/^\d{2}\.\d{1,2}$/.test(raw["patch"])) {
+    violate("baseline-patch", `patch resolved to "${String(raw["patch"])}"`);
+  }
+  return raw as unknown as BaselineStats;
 }
 
 const MATCHUP_KEYS = ["cid", "vsWr", "n", "d1", "d2", "allWr", "defaultLane"] as const;
