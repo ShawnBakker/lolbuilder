@@ -6,7 +6,7 @@
 
 ## 1. Scope
 
-A static web tool: enter a 10-champion draft (your pick, 4 allies, 5 enemies, roles); receive (a) an advisory pick assessment with early/mid/late and overall components, (b) the highest-WR build vs. the lane opponent, (c) rule-based counter-items vs. the enemy composition. Data refreshed per patch from validated lolalytics sources. Private, noncommercial, friends-only.
+A static web tool: enter a 10-champion draft (your pick, 4 allies, 5 enemies, roles); receive (a) an advisory pick assessment with early/mid/late and overall components, (b) the champion's highest-WR build *(amended 2026-07-03: matchup-conditioned builds are validated to exist on the vs-route but are architecturally undeliverable in v1 — lolalytics serves no CORS headers, pair-scale pre-scraping violates D13, and a proxy violates D4/D5; they are a named v2 feature riding the LCU helper, which fetches exactly one vs-payload for the live matchup)*, (c) rule-based counter-items vs. the enemy composition. Data refreshed per patch from validated lolalytics sources. Private, noncommercial, friends-only.
 
 **Non-goals (inherited from brainstorm, final):** no public release; no database; no Riot API data ingestion (personal key registration only, for standing + future calibration); no ML draft model; no accounts; no automation of any Riot surface. Output is advisory — ranking heuristic framing, never a commanded pick.
 
@@ -98,4 +98,4 @@ Rule-based layer over F4's build output: anti-heal ≥2 healers, MR/armor skew v
 
 ## 7. v2 seams honored by v1 (no v2 code)
 
-`LcuProvider` (champ-select auto-fill via local helper), calibration logging (Match-V5 own-results vs predicted, needs PC-5), live build advisor (Game Client API, sanctioned), curve metrics over buckets (slope/peak — parked).
+`LcuProvider` (champ-select auto-fill via local helper), matchup-conditioned builds (vs-route q-data via the same helper — validated 2026-07-03, CORS-blocked for browsers), calibration logging (Match-V5 own-results vs predicted, needs PC-5), live build advisor (Game Client API, sanctioned), curve metrics over buckets (slope/peak — parked), pick suggestion (F8 — own brainstorm at `docs/brainstorm/pick-suggestion-brainstorm.md`, needs its own spec pass).

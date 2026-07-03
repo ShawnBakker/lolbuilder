@@ -1,29 +1,25 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { LANES, type ChampionRef, type Lane } from "@lolbuilder/types";
 import { K_PHASE, phaseBreakdown, scorePick, selectCells, type PickScore } from "@lolbuilder/core";
-import { checkStale, getLoaded, loadManifest, trackLoaded, type Manifest } from "./data.js";
+import { checkStale, getLoaded, getLoadedVersion, loadManifest, subscribeLoaded, trackLoaded, type Manifest } from "./data.js";
 import { DISCLOSURE, describeConfidence, ratingToPct, tierFor } from "./display.js";
 import { ManualProvider, type BoardSlot } from "./provider.js";
 
 const provider = new ManualProvider();
 
+const subscribeBoard = (cb: () => void) => provider.subscribe(cb);
+const boardSnapshot = () => provider.version();
+
 function useBoard(): number {
-  return useSyncExternalStore(
-    (cb) => provider.subscribe(cb),
-    (() => {
-      let version = 0;
-      let last = "";
-      return () => {
-        const now = JSON.stringify(provider.slots());
-        if (now !== last) {
-          last = now;
-          version++;
-        }
-        return version;
-      };
-    })(),
-  );
+  return useSyncExternalStore(subscribeBoard, boardSnapshot);
 }
+
+function useLoadedShards(): number {
+  return useSyncExternalStore(subscribeLoaded, getLoadedVersion);
+}
+
+/** Punctuation/space-blind matching: "khaz", "kha'z", "aurelion sol" all hit. */
+const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 
 export default function App() {
   const [manifest, setManifest] = useState<Manifest | null>(null);
@@ -33,8 +29,9 @@ export default function App() {
   const [staleInfo, setStaleInfo] = useState<{ stale: boolean; livePatch: string } | null | undefined>(undefined);
   const [selected, setSelected] = useState<{ side: BoardSlot["side"]; index: number }>({ side: "ally", index: 0 });
   const [query, setQuery] = useState("");
-  const [dataVersion, setDataVersion] = useState(0);
-  useBoard();
+  const [highlight, setHighlight] = useState(0);
+  const boardVersion = useBoard();
+  useLoadedShards();
 
   useEffect(() => {
     void loadManifest().then(async (m) => {
@@ -43,15 +40,14 @@ export default function App() {
     });
   }, []);
 
-  // AC-2: every champion on the board is prefetched the moment it appears.
+  // AC-2: every champion on the board is prefetched the moment it appears
+  // (assign() fires trackLoaded directly; this covers any other path).
   const draft = provider.getDraftState();
   useEffect(() => {
     for (const slot of provider.slots()) {
       if (slot.cid !== null) trackLoaded(slot.cid);
     }
-    const t = setInterval(() => setDataVersion((v) => v + 1), 300); // pick up shard arrivals
-    return () => clearInterval(t);
-  });
+  }, [boardVersion]);
 
   const byCid = useMemo(() => new Map((manifest?.champions ?? []).map((c) => [c.cid, c])), [manifest]);
   const pickShard = draft ? getLoaded(draft.pick.cid) : null;
@@ -67,21 +63,45 @@ export default function App() {
   }
 
   const results = useMemo(() => {
-    if (!manifest || !query.trim()) return [];
-    const q = query.trim().toLowerCase();
-    return manifest.champions.filter((c) => c.name.toLowerCase().includes(q) || c.slug.includes(q)).slice(0, 8);
+    if (!manifest || !norm(query)) return [];
+    const q = norm(query);
+    const all = manifest.champions.filter((c) => norm(c.name).includes(q) || c.slug.includes(q));
+    // prefix matches first, so "ka" ranks Kayle/Kassadin above Akali
+    all.sort((a, b) => Number(norm(b.name).startsWith(q)) - Number(norm(a.name).startsWith(q)) || a.name.localeCompare(b.name));
+    return all.slice(0, 8);
   }, [manifest, query]);
+
+  useEffect(() => setHighlight(0), [query]);
 
   const assign = (c: ChampionRef) => {
     provider.assign(selected.side, selected.index, c.cid);
     trackLoaded(c.cid);
     setQuery("");
+    // auto-advance to the next empty slot: entering a full lobby is one
+    // continuous type-Enter flow, not ten click-type round-trips
+    const next = provider.nextEmpty();
+    if (next) setSelected(next);
+  };
+
+  const onSearchKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlight((h) => Math.min(h + 1, results.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlight((h) => Math.max(h - 1, 0));
+    } else if (e.key === "Enter" && results.length > 0) {
+      e.preventDefault();
+      assign(results[Math.min(highlight, results.length - 1)]!);
+    } else if (e.key === "Escape") {
+      setQuery("");
+    }
   };
 
   if (!manifest) return <main className="wrap">loading dataset…</main>;
 
   return (
-    <main className="wrap" data-v={dataVersion}>
+    <main className="wrap">
       <h1>lolbuilder</h1>
       <p className="sub">
         advisory draft analysis · patch {manifest.patch} · dataset {new Date(manifest.generatedAt).toISOString().slice(0, 10)} · Emerald+ ranked, all regions
@@ -144,13 +164,15 @@ export default function App() {
 
       <section className="search">
         <input
-          placeholder={`assign to: ${selected.side} ${selected.side === "ally" && selected.index === 0 ? "pick slot" : "slot " + (selected.index + 1)} — type a champion…`}
+          autoFocus
+          placeholder={`assign to: ${selected.side} ${selected.side === "ally" && selected.index === 0 ? "pick slot" : "slot " + (selected.index + 1)} — type, ↑↓ to choose, Enter to assign`}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={onSearchKey}
         />
         <div className="results">
-          {results.map((c) => (
-            <button key={c.cid} onClick={() => assign(c)}>
+          {results.map((c, i) => (
+            <button key={c.cid} className={i === highlight ? "hl" : ""} onMouseEnter={() => setHighlight(i)} onClick={() => assign(c)}>
               {c.name}
             </button>
           ))}

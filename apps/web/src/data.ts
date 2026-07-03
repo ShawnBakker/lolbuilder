@@ -43,13 +43,40 @@ export function prefetch(cid: number): Promise<Shard> {
   return p;
 }
 
+/**
+ * Loaded-shard store with proper change notification (no polling): the UI
+ * subscribes via useSyncExternalStore and re-renders exactly when a shard
+ * arrives, not on a timer.
+ */
+const loadedShards = new Map<number, Shard>();
+const loadListeners = new Set<() => void>();
+let loadedVersion = 0;
+
 /** Non-blocking read: the shard if it has already arrived, else null. */
 export function getLoaded(cid: number): Shard | null {
   return loadedShards.get(cid) ?? null;
 }
-const loadedShards = new Map<number, Shard>();
+
+export function subscribeLoaded(listener: () => void): () => void {
+  loadListeners.add(listener);
+  return () => loadListeners.delete(listener);
+}
+
+export function getLoadedVersion(): number {
+  return loadedVersion;
+}
+
 export function trackLoaded(cid: number): void {
-  void prefetch(cid).then((s) => loadedShards.set(cid, s), () => undefined);
+  void prefetch(cid).then(
+    (s) => {
+      if (!loadedShards.has(cid)) {
+        loadedShards.set(cid, s);
+        loadedVersion++;
+        for (const l of loadListeners) l();
+      }
+    },
+    () => undefined,
+  );
 }
 
 /**

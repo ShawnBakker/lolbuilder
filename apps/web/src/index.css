@@ -16,6 +16,7 @@ h1 { margin-bottom: 0; }
 .search input { width: 100%; padding: 0.5rem 0.75rem; background: #1b212b; color: inherit; border: 1px solid #2a3340; border-radius: 6px; box-sizing: border-box; }
 .results { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
 .results button { background: #223047; color: inherit; border: 1px solid #33456a; border-radius: 6px; padding: 0.3rem 0.7rem; cursor: pointer; }
+.results button.hl { border-color: #5a8dd6; background: #2b3f61; }
 .panel { margin-top: 1.5rem; border: 1px solid #2a3340; border-radius: 8px; padding: 1rem; }
 .panel h2 { margin-top: 0; }
 .conf { font-size: 0.8rem; font-weight: normal; color: #8b96a5; }

@@ -25,6 +25,12 @@ const DEFAULT_LANES: Lane[] = ["top", "jungle", "middle", "bottom", "support"];
 export class ManualProvider implements DraftStateProvider {
   #slots: BoardSlot[];
   #listeners = new Set<() => void>();
+  #version = 0;
+
+  /** Monotonic change counter — a stable useSyncExternalStore snapshot. */
+  version(): number {
+    return this.#version;
+  }
 
   constructor() {
     this.#slots = (["ally", "enemy"] as const).flatMap((side) =>
@@ -69,6 +75,13 @@ export class ManualProvider implements DraftStateProvider {
   }
 
   #emit(): void {
+    this.#version++;
     for (const l of this.#listeners) l();
+  }
+
+  /** Next empty slot in draft order (allies then enemies), or null. */
+  nextEmpty(): { side: BoardSlot["side"]; index: number } | null {
+    const empty = this.#slots.find((s) => s.cid === null);
+    return empty ? { side: empty.side, index: empty.index } : null;
   }
 }
