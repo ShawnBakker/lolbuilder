@@ -20,6 +20,9 @@ importers:
 
   apps/pipeline:
     dependencies:
+      '@lolbuilder/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@lolbuilder/qdata':
         specifier: workspace:*
         version: link:../../packages/qdata

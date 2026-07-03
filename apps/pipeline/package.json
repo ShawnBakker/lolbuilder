@@ -9,6 +9,7 @@
     "scrape": "tsx src/run.ts"
   },
   "dependencies": {
+    "@lolbuilder/core": "workspace:*",
     "@lolbuilder/qdata": "workspace:*",
     "@lolbuilder/types": "workspace:*"
   },

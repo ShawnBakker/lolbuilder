@@ -91,10 +91,10 @@ Rule-based layer over F4's build output: anti-heal ≥2 healers, MR/armor skew v
 
 ## 6. Open items
 
-- OI-1: `time` bucket → minute-boundary mapping (compare payload against the site's rendered graph once, during F5 implementation).
+- OI-1: ✅ RESOLVED AS RELATIVE (2026-07-03) — the payload carries no minute labels (string-scan), so phase labels stay relative per AC-15; optional browser unlock documented in `docs/analysis/m3-m4-verification.md`.
 - OI-2: License — PolyForm Noncommercial (reckon pattern) vs MIT (Roguemouse pattern). Portfolio-signaling call, operator's.
-- OI-3: Synergy d1/d2 exact semantics — consume as opaque normalized deltas until verified against the site's published formulas during F4; do not re-derive without checking. *(Reinforced 2026-07-02: an external LLM review confidently summed d1/d2 as logit-space addends — they are percentage-point deltas per the site's definitions. This open item exists to prevent exactly that.)*
-- OI-4: Per-source shrinkage constants (k_matchup, k_synergy) — set in /plan via sensitivity sweep (k ∈ {10, 25, 50}) over one patch's ranking stability.
+- OI-3: ✅ RESOLVED (2026-07-03, empirically): matchup d1 = vsWr − allWr **exactly** across all 63,972 production rows; d2 = d1 minus an unidentified champion-level normalizer; synergy d1 same family. Engine consumes raw (wr, n) and derives its own logit deltas; d1 is UI-explanation only; d2 unconsumed. Record: `docs/analysis/m3-m4-verification.md`. *(The reinforcing exhibit stands: an external LLM review summed d1/d2 as logit addends — wrong by construction.)*
+- OI-4: ✅ RESOLVED (2026-07-03): sweep over {10,25,50}² showed a plateau across the whole grid (top-1 20/20 everywhere) — ordering-insensitive, so constants follow D8's structural rationale: k_matchup=25, k_synergy=50, named and tunable. Record: `docs/analysis/m3-m4-verification.md`.
 
 ## 7. v2 seams honored by v1 (no v2 code)
 

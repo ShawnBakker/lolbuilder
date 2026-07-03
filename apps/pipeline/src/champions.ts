@@ -4,14 +4,10 @@
  * lolalytics' URL slugs are handled by an explicit override map that is only
  * ever populated from observed run failures — never guessed.
  */
-import { ddragonToLolalytics } from "@lolbuilder/types";
+import { ddragonToLolalytics, type ChampionRef } from "@lolbuilder/types";
 import type { PoliteFetcher } from "./fetcher.js";
 
-export interface ChampionRef {
-  cid: number;
-  slug: string;
-  name: string;
-}
+export type { ChampionRef };
 
 export interface Roster {
   ddragon: string;

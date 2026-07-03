@@ -100,3 +100,42 @@ export interface GameLengthData {
   /** Wins per bucket; invariant: wins ≤ games, per bucket. */
   timeWin: TimeBuckets;
 }
+
+/** One champion in the pipeline's roster manifest. */
+export interface ChampionRef {
+  cid: ChampionId;
+  slug: ChampionSlug;
+  name: string;
+}
+
+/**
+ * Published per-champion shard — the contract between the pipeline (writer)
+ * and the scoring engine / frontend (readers). Matches what M2 emits.
+ */
+export interface Shard {
+  champ: ChampionRef;
+  patch: string;
+  baseline: BaselineStats;
+  gameLength: GameLengthData;
+  /** Default counters table (all opponent lanes aggregated). */
+  matchups: MatchupRow[];
+  /** Per-opponent-lane matchup tables (vslane variants) — AC-3's data. */
+  matchupsVsLane: Record<Lane, MatchupRow[]>;
+  synergy: Partial<Record<Lane, SynergyRow[]>>;
+}
+
+/** A champion assigned to a lane on the draft board. */
+export interface SlotRef {
+  cid: ChampionId;
+  lane: Lane;
+}
+
+/**
+ * The 10-champion draft state produced by a DraftStateProvider (spec F1).
+ * `pick` is the slot being assessed; allies exclude it (≤4); enemies ≤5.
+ */
+export interface DraftState {
+  pick: SlotRef;
+  allies: SlotRef[];
+  enemies: SlotRef[];
+}

@@ -7,23 +7,10 @@
  * Gap B: every shard carries all five vslane matchup tables so flex/off-role
  * scoring has real cross-lane cells (spec AC-3 data dependency).
  */
-import { LANES, type BaselineStats, type GameLengthData, type Lane, type MatchupRow, type SynergyRow } from "@lolbuilder/types";
+import { LANES, type ChampionRef, type Lane, type MatchupRow, type Shard } from "@lolbuilder/types";
 import { extractBaseline, extractGameLength, extractMatchups, extractSynergy, parsePayload } from "@lolbuilder/qdata";
-import type { ChampionRef } from "./champions.js";
 import { buildUrl, countersUrl, synergyUrl } from "./config.js";
 import type { PoliteFetcher } from "./fetcher.js";
-
-export interface Shard {
-  champ: ChampionRef;
-  patch: string;
-  baseline: BaselineStats;
-  gameLength: GameLengthData;
-  /** Default counters table (all opponent lanes aggregated). */
-  matchups: MatchupRow[];
-  /** Per-opponent-lane matchup tables (vslane variants) — AC-3's data. */
-  matchupsVsLane: Record<Lane, MatchupRow[]>;
-  synergy: Partial<Record<Lane, SynergyRow[]>>;
-}
 
 export async function scrapeChampion(fetcher: PoliteFetcher, champ: ChampionRef, patch: string): Promise<Shard> {
   const build = parsePayload(await fetcher.json(buildUrl(champ.slug)));
