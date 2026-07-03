@@ -7,7 +7,9 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "drift": "tsx scripts/drift-check.ts"
   },
   "dependencies": {
     "@lolbuilder/types": "workspace:*"
