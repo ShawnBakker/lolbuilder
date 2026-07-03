@@ -50,7 +50,7 @@ GitHub Pages: Vite+React static frontend
 - AC-4: Pipeline is idempotent per patch; re-runs resume from local fetch cache (politeness requirement).
 - AC-5: Requests are sequential with ≥2s delay, honest UA; full-scrape cadence **≤2 per patch cycle** (patch day + one mid-patch refresh) enforced by the trigger logic, not by promises. *(Amended: the earlier "≤3×/month" phrasing didn't close against the 14-day cycle — 2 patches/month × 2 runs = 4/month. Per-cycle is the enforceable invariant.)*
 - AC-6: Champion list is derived from Data Dragon's manifest each run — a new champion release requires zero code changes.
-- AC-7: Output shards are versioned by patch and published as a GitHub Release; the frontend can pin or follow latest. **Gated on PC-6** (Release-asset CORS from a Pages origin is unverified — asset downloads redirect via objects.githubusercontent.com with historically inconsistent CORS). Fallback if PC-6 fails: pipeline additionally publishes the current patch's shards to the Pages branch; Releases remain the archive.
+- AC-7: Output shards are versioned by patch and published as a GitHub Release (per-patch archive), **and the current patch's shards are published to the Pages branch, which is the frontend's read path** (same-origin). *(PC-6 resolved 2026-07-03: Release-asset downloads — GET with a Pages Origin, both hops of the redirect chain via release-assets.githubusercontent.com — return no CORS headers at all, so browsers block the direct fetch. The pre-written fallback is now the design.)*
 
 ### F3 — q-data deserializer (`packages/qdata`)
 - AC-8: Resolves the Qwik object graph mechanically (flat `_objs`, base-36 refs) for exactly the tables we consume — not a general Qwik deserializer. **Resolution must occur at leaf level, single hop**: every container slot (object field, array element) is a base-36 ref, and primitives exist only as top-level `_objs` entries *(corrected 2026-07-03: the earlier "mixed literal/ref interning" claim was an inference from a NaN, refuted at fixture scale — 8 payloads, 2 capture days, zero literal slots)*.
@@ -86,8 +86,8 @@ Rule-based layer over F4's build output: anti-heal ≥2 healers, MR/armor skew v
 - PC-3: u.gg DevTools pattern capture (documents fallback #1).
 - PC-4: ✅ DONE (review probe 5): lulu build q-data same graph structure, same time/timeWin shape and semantics.
 - PC-5: Register Riot personal API key (product description: private draft-analysis tool, small friend group; discloses future LCU champ-select reads + low-volume Match-V5 for own results).
-- PC-6: **NEW** — Release-asset CORS: one `fetch()` of a Release asset from a Pages-origin page. If it fails, AC-7's fallback activates (spec already amended).
-- PC-7: **NEW** — Full pipeline dry-run executed *from GitHub Actions* (fetch → deserialize → emit for 2–3 champions). Settles D5's single-observation gap on GH's actual egress IP class. Blocking for /plan sign-off.
+- PC-6: ✅ DONE (2026-07-03) — **FAIL, fallback activated**: no `access-control-allow-origin` on Release-asset downloads (verified via GET with Pages Origin across the redirect chain; live browser harness at the Pages placeholder page shows the same). AC-7 amended: Pages branch is the frontend read path, Releases the archive.
+- PC-7: ✅ DONE (2026-07-03, run 28643994930) — dry-run from GitHub Actions (Azure northcentralus): 3 champions fetched (build + counters q-data + synergy mega), deserialized, invariant-validated, shards emitted (aatrox 81 matchups/645 synergy rows; lulu 71/627; jinx 52/661). Weekly drift canary also green from Actions (run 28643996255). D5's IP-class assumption replicated on GH's actual egress.
 
 ## 6. Open items
 
