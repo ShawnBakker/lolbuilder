@@ -166,8 +166,19 @@ export default function App() {
       </section>
 
       <section className="search">
+        {/* autoComplete/spellCheck off: the browser's own suggestion dropdown
+            over this input swallows ArrowUp/ArrowDown before the page sees
+            them (Bug 1 root cause hypothesis — handler verified working
+            against real DOM keydown events; the native autofill layer is the
+            one thing headless tests cannot reproduce). */}
         <input
           autoFocus
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
+          role="combobox"
+          aria-expanded={results.length > 0}
+          aria-autocomplete="list"
           placeholder={`assign to: ${selected.side} ${selected.side === "ally" && selected.index === 0 ? "pick slot" : "slot " + (selected.index + 1)} — type, ↑↓ to choose, Enter to assign`}
           value={query}
           onChange={(e) => setQuery(e.target.value)}

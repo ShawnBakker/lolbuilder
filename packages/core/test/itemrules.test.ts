@@ -36,16 +36,40 @@ describe("evaluateItemRules (AC-20)", () => {
   });
 
   it("damage-share triggers use measured comp totals", () => {
-    const apComp = [enemy({ physical: 1_000, magic: 9_000 }), enemy({ physical: 2_000, magic: 8_000 })];
+    const apComp = [
+      enemy({ physical: 1_000, magic: 9_000 }),
+      enemy({ physical: 2_000, magic: 8_000 }),
+      enemy({ physical: 1_000, magic: 9_000 }),
+    ];
     const recs = evaluateItemRules(apComp, RULES);
     expect(recs.find((r) => r.ruleId === "mr")!.evidence).toMatch(/8[0-9]% of enemy damage is magic/);
     expect(recs.find((r) => r.ruleId === "armor")).toBeUndefined();
-    const adRecs = evaluateItemRules([enemy({}), enemy({})], RULES);
+    const adRecs = evaluateItemRules([enemy({}), enemy({}), enemy({})], RULES);
     expect(adRecs.find((r) => r.ruleId === "armor")).toBeDefined();
     expect(adRecs.find((r) => r.ruleId === "mr")).toBeUndefined();
   });
 
   it("empty enemy list recommends nothing", () => {
     expect(evaluateItemRules([], RULES)).toEqual([]);
+  });
+
+  it("below MIN_PROFILES no rule of ANY kind evaluates (uniform partial-data gate)", () => {
+    // 2 healers of 2 entered + pure-AD profiles: would fire anti-heal AND
+    // armor-skew without the gate. One-champion AP profile would fire mr-skew.
+    const twoHealers = [enemy({ name: "Soraka", heals: true }), enemy({ name: "Yuumi", heals: true })];
+    expect(evaluateItemRules(twoHealers, RULES)).toEqual([]);
+    expect(evaluateItemRules([enemy({ physical: 100, magic: 9_900 })], RULES)).toEqual([]);
+  });
+
+  it("at 3–4 enemies, every fired evidence names its basis; at 5 it doesn't", () => {
+    const three = [enemy({ heals: true, name: "Soraka" }), enemy({ heals: true, name: "Yuumi" }), enemy({})];
+    const recs3 = evaluateItemRules(three, RULES);
+    expect(recs3.length).toBeGreaterThan(0);
+    for (const r of recs3) expect(r.evidence).toContain("based on 3 of 5 enemies entered");
+
+    const five = [...three, enemy({}), enemy({})];
+    for (const r of evaluateItemRules(five, RULES)) {
+      expect(r.evidence).not.toContain("based on");
+    }
   });
 });

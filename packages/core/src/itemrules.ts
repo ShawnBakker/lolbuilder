@@ -43,8 +43,21 @@ export interface ItemRecommendation {
 
 const names = (list: EnemyProfile[]) => list.map((e) => e.name).join(", ");
 
+/**
+ * Partial-data gate (operator finding, 2026-07-03): a team-wide claim from a
+ * one-champion sample is false precision wearing an honest label. Below
+ * MIN_PROFILES enemies, NO rule evaluates — same silence-when-unwarranted
+ * pattern as missing scoring cells. At 3–4 of TEAM_SIZE, every evidence
+ * string names its basis so it cannot read as a full-team conclusion.
+ * Uniform across all rules: the count rules share the flaw (2 flagged of 2
+ * entered implies a 5-man statement), not just the damage-share rules.
+ */
+export const MIN_PROFILES = 3;
+export const TEAM_SIZE = 5;
+
 export function evaluateItemRules(enemies: EnemyProfile[], rules: ItemRule[]): ItemRecommendation[] {
-  if (enemies.length === 0) return [];
+  if (enemies.length < MIN_PROFILES) return [];
+  const basis = enemies.length < TEAM_SIZE ? ` — based on ${enemies.length} of ${TEAM_SIZE} enemies entered` : "";
   const totalPhys = enemies.reduce((a, e) => a + e.physical, 0);
   const totalMagic = enemies.reduce((a, e) => a + e.magic, 0);
   const apShare = totalPhys + totalMagic > 0 ? totalMagic / (totalPhys + totalMagic) : 0.5;
@@ -66,7 +79,7 @@ export function evaluateItemRules(enemies: EnemyProfile[], rules: ItemRule[]): I
       fired = 1 - apShare >= t.share;
       evidence = `${Math.round((1 - apShare) * 100)}% of enemy damage is physical`;
     }
-    if (fired) out.push({ ruleId: rule.id, items: rule.items, explanation: rule.explanation, evidence });
+    if (fired) out.push({ ruleId: rule.id, items: rule.items, explanation: rule.explanation, evidence: evidence + basis });
   }
   return out;
 }

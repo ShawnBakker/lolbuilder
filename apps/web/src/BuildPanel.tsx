@@ -5,7 +5,7 @@
  */
 import { useSyncExternalStore } from "react";
 import type { BuildSet, BuildSlotOption, ChampionRef, DraftState, Shard } from "@lolbuilder/types";
-import { evaluateItemRules, type EnemyProfile, type ItemRule } from "@lolbuilder/core";
+import { MIN_PROFILES, evaluateItemRules, type EnemyProfile, type ItemRule } from "@lolbuilder/core";
 import rulesJson from "./item-rules.json";
 import { getItem, getItemsVersion, subscribeItems } from "./items.js";
 import { getLoaded } from "./data.js";
@@ -92,8 +92,13 @@ export function BuildPanel({ shard, draft, byCid }: { shard: Shard; draft: Draft
           ))}
         </>
       )}
-      {profiles.length < draft.enemies.length && (
-        <p className="conf">comp rules evaluated on {profiles.length}/{draft.enemies.length} enemies (shards still loading or pre-M6b data)</p>
+      {profiles.length < MIN_PROFILES && (
+        <p className="conf">
+          comp rules need at least {MIN_PROFILES} enemies entered with data (currently {profiles.length}) — no team-wide claims from a partial comp
+        </p>
+      )}
+      {profiles.length >= MIN_PROFILES && profiles.length < draft.enemies.length && (
+        <p className="conf">comp rules evaluated on {profiles.length}/{draft.enemies.length} entered enemies (shards still loading or pre-M6b data)</p>
       )}
     </section>
   );
