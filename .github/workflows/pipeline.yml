@@ -70,6 +70,8 @@ jobs:
         with:
           path: apps/pipeline/.cache
           key: qcache-${{ needs.decide.outputs.patch }}-${{ needs.decide.outputs.run_type }}
+          restore-keys: |
+            qcache-${{ needs.decide.outputs.patch }}-${{ needs.decide.outputs.run_type }}-
       - name: Scrape
         run: pnpm --filter @lolbuilder/pipeline run scrape ${{ inputs.limit && format('--limit {0}', inputs.limit) || '' }}
       - name: Save fetch cache
