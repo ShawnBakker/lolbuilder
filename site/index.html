@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>lolbuilder — placeholder</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 42rem; margin: 4rem auto; padding: 0 1rem; line-height: 1.5; }
+    code { background: rgba(127,127,127,.15); padding: .1em .3em; border-radius: 3px; }
+    #cors { padding: .75rem 1rem; border-radius: 6px; border: 1px solid rgba(127,127,127,.4); }
+    .pass { border-color: #2e7d32; }
+    .fail { border-color: #c62828; }
+  </style>
+</head>
+<body>
+  <h1>lolbuilder</h1>
+  <p>Placeholder page — M1 Pages bootstrap (plan task 1). The real frontend arrives in M5.</p>
+  <h2>PC-6: Release-asset CORS check (AC-7)</h2>
+  <p>This page <code>fetch()</code>es a GitHub Release asset cross-origin and reports whether the browser allows it:</p>
+  <div id="cors">running…</div>
+  <script>
+    const el = document.getElementById("cors");
+    const url = "https://github.com/ShawnBakker/lolbuilder/releases/download/pc6-test/cors-probe.json";
+    fetch(url)
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+      .then(data => {
+        el.textContent = "PASS — Release asset fetched cross-origin from a Pages page. Payload: " + JSON.stringify(data);
+        el.className = "pass";
+      })
+      .catch(err => {
+        el.textContent = "FAIL — " + err + " (a TypeError with no HTTP status usually means CORS-blocked). AC-7 fallback activates: shards mirror to the Pages branch.";
+        el.className = "fail";
+      });
+  </script>
+</body>
+</html>
