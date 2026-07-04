@@ -5,9 +5,12 @@ import { checkStale, getLoaded, getLoadedVersion, loadManifest, subscribeLoaded,
 import { DISCLOSURE, describeConfidence, ratingToPct, tierFor } from "./display.js";
 import { BuildPanel } from "./BuildPanel.js";
 import { loadItems } from "./items.js";
-import { ManualProvider, type BoardSlot } from "./provider.js";
+import { ManualProvider, type BoardSlot, type BoardSource } from "./provider.js";
 
-const provider = new ManualProvider();
+// Typed against the contract, not the concrete class (AC-M7-1b): all seven
+// board call sites below flow through BoardSource. M7.4's provider
+// selection swaps this reference; nothing else changes.
+const provider: BoardSource = new ManualProvider();
 
 const subscribeBoard = (cb: () => void) => provider.subscribe(cb);
 const boardSnapshot = () => provider.version();

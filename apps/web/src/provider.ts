@@ -13,6 +13,24 @@ export interface DraftStateProvider {
   subscribe(listener: () => void): () => void;
 }
 
+/**
+ * The board-facing contract (AC-M7-1b): the five concrete methods the board
+ * UI depends on — enumerated by Pass A at seven call sites (App.tsx :13,
+ * :50, :80, :85, :127, :138, :155) — lifted into an interface both
+ * ManualProvider and (M7.4) LcuProvider satisfy. The scoring path needs
+ * only DraftStateProvider; the board needs this. Provider *selection* is
+ * AC-M7-2 (M7.4) — this milestone only makes the board provider-agnostic.
+ */
+export interface BoardSource extends DraftStateProvider {
+  /** Monotonic change counter — a stable useSyncExternalStore snapshot. */
+  version(): number;
+  slots(): readonly BoardSlot[];
+  assign(side: BoardSlot["side"], index: number, cid: number | null): void;
+  setLane(side: BoardSlot["side"], index: number, lane: Lane): void;
+  /** Next empty slot in draft order (allies then enemies), or null. */
+  nextEmpty(): { side: BoardSlot["side"]; index: number } | null;
+}
+
 export interface BoardSlot {
   side: "ally" | "enemy";
   index: number; // 0–4 per side; ally 0 is the pick slot
@@ -22,7 +40,7 @@ export interface BoardSlot {
 
 const DEFAULT_LANES: Lane[] = ["top", "jungle", "middle", "bottom", "support"];
 
-export class ManualProvider implements DraftStateProvider {
+export class ManualProvider implements BoardSource {
   #slots: BoardSlot[];
   #listeners = new Set<() => void>();
   #version = 0;
