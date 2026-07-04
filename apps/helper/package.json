@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "tsx src/main.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "bundle": "esbuild src/main.ts --bundle --platform=node --format=esm --outfile=dist/helper.mjs --banner:js=\"// lolbuilder helper — bundled single file. Source: apps/helper in the repo.\""
   },
   "devDependencies": {
-    "@types/node": "^26.1.0"
+    "@types/node": "^26.1.0",
+    "esbuild": "^0.28.1"
   },
   "dependencies": {
     "@lolbuilder/types": "workspace:*"
