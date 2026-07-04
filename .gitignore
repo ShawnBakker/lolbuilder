@@ -3,3 +3,4 @@ dist/
 coverage/
 *.tsbuildinfo
 .DS_Store
+tools/pc-m7-3-session-dump*.json
