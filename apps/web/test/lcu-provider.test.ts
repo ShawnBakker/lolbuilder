@@ -166,6 +166,44 @@ describe("live chain: session → inference → marking → scoring exclusion", 
     expect(slot.inferred).toEqual({ share: 99.3 }); // fresh session: back to inference, old override gone
   });
 
+  it("REGRESSION (live 2026-07-04): shard arriving WITHOUT a session change must re-render the inference", async () => {
+    // The Vel'Koz freeze: enemy locks -> shard not yet loaded -> 'role
+    // needed' renders -> shard loads (session unchanged) -> the next poll
+    // recomputes the inference but the old change-check saw 'no change'
+    // and never notified React. The badge stayed stale on screen.
+    helperBody = session([cell(5, 121)]);
+    const { lcu, data } = await fresh();
+    const notify = vi.fn();
+    lcu.subscribe(notify);
+
+    await lcu.pollOnce(); // enemy revealed; khazix shard NOT loaded yet
+    expect(lcu.slots().find((s) => s.cid === 121)!.unknownRole).toBe(true);
+
+    await vi.waitFor(() => expect(data.getLoaded(121)).not.toBeNull()); // shard lands; session identical
+    notify.mockClear();
+    await lcu.pollOnce(); // same session body — but derived slots changed
+    expect(notify).toHaveBeenCalled(); // React MUST be told
+    const slot = lcu.slots().find((s) => s.cid === 121)!;
+    expect(slot.inferred).toEqual({ share: 99.3 });
+    expect(slot.unknownRole).toBe(false);
+  });
+
+  it("the real 2026-07-04 comp: all five enemies infer, including the flex whose best lane clears the bar last", async () => {
+    // Ezreal 95.8 bottom, Rengar 90.7 jungle, Jax 73.4 top, Akali 69.1 mid,
+    // Vel'Koz support 63.6 — the greedy pass assigns ALL FIVE (Vel'Koz's
+    // support clears the threshold once the other lanes are taken).
+    const { inferEnemyRoles } = await import("@lolbuilder/core");
+    const out = inferEnemyRoles([
+      { cid: 81, lanes: { top: 0.5, jungle: 0.2, middle: 2.1, bottom: 95.8, support: 1.5 } },
+      { cid: 84, lanes: { top: 30.5, jungle: 0, middle: 69.1, bottom: 0.2, support: 0.3 } },
+      { cid: 24, lanes: { top: 73.4, jungle: 23.7, middle: 1, bottom: 0.2, support: 1.7 } },
+      { cid: 107, lanes: { top: 6.1, jungle: 90.7, middle: 0, bottom: 0.8, support: 2.2 } },
+      { cid: 161, lanes: { top: 2.2, jungle: 0, middle: 18.2, bottom: 16, support: 63.6 } },
+    ]);
+    expect(out).toHaveLength(5);
+    expect(out.find((r) => r.cid === 161)).toEqual({ cid: 161, lane: "support", share: 63.6 });
+  });
+
   it("assignment is read-only while live: champions come from the game", async () => {
     helperBody = session([cell(5, 121)]);
     const { manual, lcu } = await fresh();

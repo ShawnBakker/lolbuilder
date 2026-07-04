@@ -113,11 +113,21 @@ export class LcuProvider implements BoardSource {
     else this.#setState({ kind: "no-helper" }, null);
   }
 
+  #lastSignature = "";
+
   #setState(status: LcuStatus, session: HelperSession | null): void {
-    const changed = JSON.stringify({ s: this.#status, d: session }) !== JSON.stringify({ s: status, d: this.#session });
+    // Change detection MUST run on the DERIVED slots, not the raw session:
+    // slots also depend on shard arrivals (inference priors) and overrides.
+    // Comparing the session alone froze the UI on a stale "role needed"
+    // when a shard loaded without the session changing — observed live
+    // 2026-07-04 (Vel'Koz, support 63.6% ≥ threshold, badge never updated).
+    const liveSlots = session ? this.#deriveSlots(session) : null;
+    const signature = JSON.stringify({ s: status, slots: liveSlots });
+    const changed = signature !== this.#lastSignature;
+    this.#lastSignature = signature;
     this.#status = status;
     this.#session = session;
-    this.#liveSlots = session ? this.#deriveSlots(session) : null;
+    this.#liveSlots = liveSlots;
     if (changed) this.#emit();
   }
 
