@@ -38,6 +38,7 @@ describe("helper server", () => {
     const noClient = (await (await fetch(`http://127.0.0.1:${port}/health`)).json()) as Record<string, unknown>;
     expect(noClient).toMatchObject({ ok: true, lcu: "no-client" });
     expect(typeof noClient.helperVersion).toBe("string");
+    expect(typeof noClient.protocol).toBe("number"); // AC-M7-14 handshake field
   });
 
   it("/champ-select degradation states are named: client-not-running / not-in-champ-select / lcu-error", async () => {

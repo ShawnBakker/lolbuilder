@@ -6,6 +6,14 @@
 
 export * from "./patch.js";
 
+/**
+ * Helper↔frontend protocol version (AC-M7-14). Shared constant so the two
+ * sides cannot drift silently: the helper reports it on every response and
+ * the frontend refuses (visibly, with an explanation) on mismatch. Bump on
+ * any breaking change to the helper's HTTP surface.
+ */
+export const HELPER_PROTOCOL = 1;
+
 /** Numeric champion id — how lolalytics *responses* key champions. */
 export type ChampionId = number;
 

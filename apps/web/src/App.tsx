@@ -5,19 +5,40 @@ import { checkStale, getLoaded, getLoadedVersion, loadManifest, subscribeLoaded,
 import { DISCLOSURE, describeConfidence, ratingToPct, tierFor } from "./display.js";
 import { BuildPanel } from "./BuildPanel.js";
 import { loadItems } from "./items.js";
+import { LcuProvider, type LcuStatus } from "./lcu-provider.js";
 import { ManualProvider, type BoardSlot, type BoardSource } from "./provider.js";
 import { SlotRow } from "./SlotRow.js";
 
-// Typed against the contract, not the concrete class (AC-M7-1b): all seven
-// board call sites below flow through BoardSource. M7.4's provider
-// selection swaps this reference; nothing else changes.
-const provider: BoardSource = new ManualProvider();
+// AC-M7-2: provider selection is explicit and user-visible (the mode
+// toggle). Both sources exist once, at module level; LcuProvider wraps the
+// manual one so degraded LCU mode IS the manual board (AC-M7-9).
+const manualProvider = new ManualProvider();
+const lcuProvider = new LcuProvider(manualProvider);
 
-const subscribeBoard = (cb: () => void) => provider.subscribe(cb);
-const boardSnapshot = () => provider.version();
+function useBoard(source: BoardSource): number {
+  const sub = useMemo(() => (cb: () => void) => source.subscribe(cb), [source]);
+  const snap = useMemo(() => () => source.version(), [source]);
+  return useSyncExternalStore(sub, snap);
+}
 
-function useBoard(): number {
-  return useSyncExternalStore(subscribeBoard, boardSnapshot);
+/** AC-M7-10: every connection state has a plain-language line. */
+function statusLine(s: LcuStatus): string {
+  switch (s.kind) {
+    case "connecting":
+      return "connecting to helper…";
+    case "no-helper":
+      return "helper not running — manual entry active";
+    case "helper-no-client":
+      return "helper up, League client not detected — manual entry active";
+    case "not-in-champ-select":
+      return "connected — waiting for champ select (manual entry active)";
+    case "version-mismatch":
+      return `helper is outdated (protocol v${s.helperProtocol}, app expects v${s.expected}) — update the helper; manual entry active`;
+    case "unrecognized-payload":
+      return `champ-select data unrecognized (${s.invariant}) — the game client may have changed; manual entry active`;
+    case "live":
+      return `LIVE — ${s.phase}`;
+  }
 }
 
 function useLoadedShards(): number {
@@ -36,8 +57,16 @@ export default function App() {
   const [selected, setSelected] = useState<{ side: BoardSlot["side"]; index: number }>({ side: "ally", index: 0 });
   const [query, setQuery] = useState("");
   const [highlight, setHighlight] = useState(0);
-  const boardVersion = useBoard();
+  const [mode, setMode] = useState<"manual" | "lcu">("manual");
+  const provider: BoardSource = mode === "lcu" ? lcuProvider : manualProvider;
+  const boardVersion = useBoard(provider);
   useLoadedShards();
+
+  useEffect(() => {
+    if (mode !== "lcu") return;
+    lcuProvider.start();
+    return () => lcuProvider.stop();
+  }, [mode]);
 
   useEffect(() => {
     void loadManifest().then(async (m) => {
@@ -123,6 +152,20 @@ export default function App() {
           Couldn't verify dataset freshness (version check unreachable) — patch {manifest.patch} data may or may not be current.
         </div>
       )}
+
+      <div className="mode">
+        <button className={mode === "manual" ? "on" : ""} onClick={() => setMode("manual")}>
+          Manual
+        </button>
+        <button className={mode === "lcu" ? "on" : ""} onClick={() => setMode("lcu")}>
+          Auto (LCU helper)
+        </button>
+        {mode === "lcu" && (
+          <span className={`lcu-status ${lcuProvider.status().kind === "live" ? "live" : ""}`} data-v={boardVersion}>
+            {statusLine(lcuProvider.status())}
+          </span>
+        )}
+      </div>
 
       <section className="boards">
         {(["ally", "enemy"] as const).map((side) => (

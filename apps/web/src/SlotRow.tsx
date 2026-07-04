@@ -22,19 +22,35 @@ export function SlotRow({ slot, champName, isPick, isSelected, onSelect, onSetLa
   return (
     <div className={`slot ${isSelected ? "sel" : ""}`} onClick={onSelect}>
       <select
-        value={slot.lane}
-        className={slot.inferred ? "inferred-lane" : ""}
-        title={slot.inferred ? `role INFERRED from pick rates (${Math.round(slot.inferred.share)}% ${slot.lane}) — change it if wrong` : undefined}
+        value={slot.unknownRole ? "" : slot.lane}
+        className={slot.unknownRole ? "unknown-lane" : slot.inferred ? "inferred-lane" : ""}
+        title={
+          slot.unknownRole
+            ? "No confident role guess for this champion — assign one; it is excluded from scoring until you do."
+            : slot.inferred
+              ? `role INFERRED from pick rates (${Math.round(slot.inferred.share)}% ${slot.lane}) — change it if wrong`
+              : undefined
+        }
         onChange={(e) => onSetLane(e.target.value as Lane)}
         onClick={(e) => e.stopPropagation()}
       >
+        {slot.unknownRole && (
+          <option value="" disabled>
+            —
+          </option>
+        )}
         {LANES.map((l) => (
           <option key={l} value={l}>
             {l}
           </option>
         ))}
       </select>
-      {slot.inferred && (
+      {slot.unknownRole && slot.cid !== null && (
+        <span className="inferred-badge unknown" title="Blank beats wrong: no lane clears the confidence bar, so this enemy is left out of scoring until you assign one.">
+          role needed
+        </span>
+      )}
+      {!slot.unknownRole && slot.inferred && (
         <span className="inferred-badge" title="This role is a guess from pick-rate data, not from the game. Change the lane to correct it.">
           inferred {Math.round(slot.inferred.share)}%
         </span>

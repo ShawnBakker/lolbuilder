@@ -8,7 +8,7 @@
  * GET /champ-select -> { state: "in-champ-select", session } | named non-data states
  */
 import { createServer, type Server } from "node:http";
-import { HELPER_VERSION } from "./version.js";
+import { HELPER_PROTOCOL, HELPER_VERSION } from "./version.js";
 import { logError } from "./sanitize.js";
 import { validateSession } from "./validate.js";
 
@@ -42,11 +42,12 @@ export function createHelperServer(bridge: LcuBridge): Server {
     try {
       if (req.url === "/health") {
         const probe = bridge.get("/lol-gameflow/v1/gameflow-phase");
-        if (!probe) return json(200, { ok: true, helperVersion: HELPER_VERSION, lcu: "no-client" });
+        if (!probe) return json(200, { ok: true, helperVersion: HELPER_VERSION, protocol: HELPER_PROTOCOL, lcu: "no-client" });
         const r = await probe.catch(() => null);
         return json(200, {
           ok: true,
           helperVersion: HELPER_VERSION,
+          protocol: HELPER_PROTOCOL,
           lcu: r && r.status === 200 ? "connected" : "unreachable",
           phase: r && r.status === 200 ? JSON.parse(r.body) : undefined,
         });
@@ -66,7 +67,7 @@ export function createHelperServer(bridge: LcuBridge): Server {
           logError(`champ-select payload violated [${result.invariant}]: ${result.detail} — serving unrecognized-payload, NOT the data`);
           return json(502, { state: "unrecognized-payload", invariant: result.invariant });
         }
-        return json(200, { state: "in-champ-select", helperVersion: HELPER_VERSION, session: result.session });
+        return json(200, { state: "in-champ-select", helperVersion: HELPER_VERSION, protocol: HELPER_PROTOCOL, session: result.session });
       }
 
       json(404, { state: "unknown-route" });

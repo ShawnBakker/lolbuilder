@@ -43,6 +43,12 @@ export interface BoardSlot {
    * ManualProvider never sets it; LcuProvider (M7.4) does.
    */
   inferred?: { share: number };
+  /**
+   * True when no role is known at all (below-threshold inference): the UI
+   * prompts for assignment and the slot is EXCLUDED from DraftState until
+   * a human supplies the lane — blank beats confidently wrong.
+   */
+  unknownRole?: boolean;
 }
 
 const DEFAULT_LANES: Lane[] = ["top", "jungle", "middle", "bottom", "support"];
