@@ -89,8 +89,8 @@ Existing scoring + vslane (Gap B) — unchanged, already consumes per-enemy role
 ## 6. Pre-implementation checklist (gates /plan sign-off)
 
 - **PC-M7-1:** ✅ DONE — mixed-content/PNA probe passed (PC-6 above).
-- **PC-M7-2 (FAILED as stated — Pass A):** `league-connect` latest release is 6.0.0-rc13 (2024-06-03) — an RC, ~2 years stale by mid-2026. By this project's PC-3 liveness standard that is NOT current/maintained. Not fatal: the protocol surface needed is ~50 lines (lockfile to basic-auth to self-signed-cert https). **Resolution:** §3 shifts to "verify league-connect still works against the live LCU (fold into PC-M7-3) OR hand-roll the ~50-line client." The wrapper is a convenience; the LCU protocol itself is stable.
-- **PC-M7-3:** Confirm the LCU champ-select session payload actually exposes what AC-M7-7 assumes (enemy champions always; position hints sometimes). This is an empirical check against a real champ-select — the M7 analog of reading a real qdata payload before trusting its shape. Cannot be done from assumption; needs a live client. (Also carries PC-M7-2's league-connect live verification.)
+- **PC-M7-2:** ✅ RESOLVED (2026-07-04, live probe): the stale `league-connect` RC **works against the live client** (authenticate + requests), and the hand-rolled ~50-line control worked in the same run — /plan's choice is free preference, not necessity. Evidence: `docs/analysis/pc-m7-3-findings.md`.
+- **PC-M7-3:** ✅ RESOLVED (2026-07-04, real Normal Draft, 19-snapshot capture): enemy champions ARE exposed (5/5, progressively on lock, via `theirTeam` + completed enemy actions); enemy position hints are ABSENT (0/5 the whole draft, allies 5/5) — **champion-role priors are load-bearing for inference, with no LCU fallback**. Bonus findings (enemy pre-lock hovers visible via uncompleted actions; bans live in `actions` not `session.bans`; ally side arrives complete with roles): `docs/analysis/pc-m7-3-findings.md`. AC-M7-7's lanes-distribution shard field is confirmed prerequisite work.
 
 ## 7. Hard lines (inherited, non-negotiable)
 

@@ -138,29 +138,54 @@ try {
   log(`=== CHECK 5 — websocket: NOT verified via league-connect (${e.message}); hand-rolled ws needs a dep — /plan evidence, not a blocker`);
 }
 
-// Poll for champ-select session, dump raw payload, snapshot twice
-log("\nwaiting for champ-select (poll 2s, up to 5 min — enter a lobby now)...");
+// Continuous capture: poll through the whole champ-select, save every
+// DISTINCT snapshot, log a timeline of enemy-reveal events. Built for the
+// dodge run: whatever appears, whenever it appears, gets captured the cycle
+// it appears — the operator can dodge as soon as enemy picks are visible.
+log("\nwaiting for champ-select (poll 2s, up to 10 min — queue now)...");
 const t0 = Date.now();
-let dumped = false;
-while (Date.now() - t0 < 5 * 60 * 1000) {
-  const res = await lcuGet(lock.port, lock.password, "/lol-champ-select/v1/session");
-  if (res.status === 200) {
-    const raw = redact(res.body); // defense in depth: token should never be in session data, redact anyway
-    writeFileSync(DUMP, raw);
-    const session = JSON.parse(raw);
-    log(`\nsession captured -> ${DUMP} (${raw.length} bytes)`);
-    analyze(session);
-    await new Promise((r) => setTimeout(r, 5000));
-    const res2 = await lcuGet(lock.port, lock.password, "/lol-champ-select/v1/session");
-    if (res2.status === 200) {
-      writeFileSync(DUMP.replace(".json", "-t+5s.json"), redact(res2.body));
-      log("\nsecond snapshot (+5s) saved — diff shows live-update behavior for OI-M7-2");
-      analyze(JSON.parse(redact(res2.body)));
+let snaps = 0;
+let lastBody = null;
+let sawSession = false;
+const timeline = [];
+while (Date.now() - t0 < 10 * 60 * 1000) {
+  const res = await lcuGet(lock.port, lock.password, "/lol-champ-select/v1/session").catch(() => null);
+  if (res && res.status === 200) {
+    sawSession = true;
+    const raw = redact(res.body);
+    if (raw !== lastBody) {
+      lastBody = raw;
+      snaps++;
+      writeFileSync(DUMP.replace(".json", `-${String(snaps).padStart(2, "0")}.json`), raw);
+      const s = JSON.parse(raw);
+      const enemyChamps = (s.theirTeam ?? []).filter((p) => p.championId > 0).map((p) => p.championId);
+      const enemyPos = (s.theirTeam ?? []).filter((p) => p.assignedPosition).map((p) => p.assignedPosition);
+      const enemyActs = (s.actions ?? []).flat().filter((a) => a.isAllyAction === false);
+      const line = {
+        t: Math.round((Date.now() - t0) / 1000),
+        phase: s.timer?.phase,
+        enemyChampionIds: enemyChamps,
+        enemyPositions: enemyPos,
+        enemyActions: enemyActs.map((a) => ({ type: a.type, championId: a.championId, completed: a.completed })),
+      };
+      timeline.push(line);
+      log(`snap ${String(snaps).padStart(2, "0")} t+${line.t}s phase=${line.phase} enemyChamps=[${enemyChamps.join(",")}] enemyPos=[${enemyPos.join(",")}] enemyActions=${JSON.stringify(line.enemyActions)}`);
     }
-    dumped = true;
+  } else if (sawSession) {
+    log("\nsession ended (dodge/exit/game-start) — capture complete");
     break;
   }
   await new Promise((r) => setTimeout(r, 2000));
 }
-if (!dumped) log("no champ-select session appeared within 5 min (HTTP 404 throughout) — client was never in champ-select");
+
+if (!sawSession) {
+  log("no champ-select session appeared (HTTP 404 throughout) — client was never in champ-select");
+} else if (lastBody) {
+  log(`\n${snaps} distinct snapshots saved. FINAL state analysis:`);
+  analyze(JSON.parse(lastBody));
+  log("\nENEMY-REVEAL TIMELINE (the CHECK 1/2 evidence):");
+  for (const l of timeline) {
+    log(`  t+${l.t}s ${l.phase}: champs=[${l.enemyChampionIds.join(",")}] pos=[${l.enemyPositions.join(",")}] actions=${JSON.stringify(l.enemyActions)}`);
+  }
+}
 log("\nprobe done. Bring back the console output + the dump file(s).");
