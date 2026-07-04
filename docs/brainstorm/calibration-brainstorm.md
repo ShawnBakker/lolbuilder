@@ -147,3 +147,20 @@ ordering effect from noise. Consequences for /spec:
 NOT need solving first — the join-key is observed; only the one-request
 Match-V5 confirmation remains, and it slots into /spec's PC list rather
 than blocking the spec's drafting.
+
+## 5. Gate result (2026-07-04, operator key, one request): PASSED 10/10
+
+`NA1_<gameId>` from the M7.4 champ-select dump fetched the finished match
+directly (HTTP 200). All ten logged participants present with correct team
+split; the logged local player (via `localPlayerCellId`) resolved to a
+boolean win/loss. `queueId` confirmed present on both sides of the join
+(session AND match), so the matchmade-only filter has its key at both ends.
+The outcome-half of the feature is now fully observed: log at lock-in →
+fetch `{platform}_{gameId}` → join own result. /spec drafts against
+confirmation.
+
+Key hygiene note: the personal key transited a conversation during this
+gate — regenerate it in the dev portal when convenient (it lives in the
+User environment as RIOT_KEY; re-run the SetEnvironmentVariable line with
+the new value). The key is used by nothing else yet; the calibration
+feature reads it from the environment when built, never from a file.
