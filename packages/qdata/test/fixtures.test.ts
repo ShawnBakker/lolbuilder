@@ -12,6 +12,7 @@ import {
   extractBaseline,
   extractBuilds,
   extractGameLength,
+  extractLanes,
   extractMatchups,
   extractSynergy,
   parsePayload,
@@ -24,6 +25,7 @@ const QDATA_FIXTURES = [
   "aatrox-build.q-data.json",
   "aatrox-counters.q-data.json",
   "aatrox-counters-vslane-middle.q-data.json",
+  "khazix-counters.q-data.json",
   "lulu-build.q-data.json",
 ];
 
@@ -122,6 +124,26 @@ describe("matchup tables (counters payloads)", () => {
     const base = new Set(extractMatchups(parsePayload(load("aatrox-counters.q-data.json"))).map((r) => r.cid));
     const vs = extractMatchups(parsePayload(load("aatrox-counters-vslane-middle.q-data.json"))).map((r) => r.cid);
     expect(vs.some((cid) => !base.has(cid))).toBe(true);
+  });
+});
+
+describe("lanes distribution (counters payloads, M7.0)", () => {
+  it("khazix: real-value assertion — 99.3% jungle", () => {
+    const lanes = extractLanes(parsePayload(load("khazix-counters.q-data.json")));
+    expect(lanes.jungle).toBe(99.3);
+    expect(lanes.top).toBeLessThan(1);
+    expect(Object.values(lanes).reduce((a, b) => a + b, 0)).toBeGreaterThan(95);
+  });
+
+  it("aatrox: top-dominant, identical across the vslane variant", () => {
+    const base = extractLanes(parsePayload(load("aatrox-counters.q-data.json")));
+    const vs = extractLanes(parsePayload(load("aatrox-counters-vslane-middle.q-data.json")));
+    expect(base.top).toBe(78.9);
+    expect(base).toEqual(vs); // same champion -> same distribution
+  });
+
+  it("fails loudly on a payload without a lanes host (build route)", () => {
+    expect(() => extractLanes(parsePayload(load("aatrox-build.q-data.json")))).toThrowError(/lanes-host/);
   });
 });
 

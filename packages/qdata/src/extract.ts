@@ -101,6 +101,40 @@ export function extractBaseline(payload: QDataPayload): BaselineStats {
   return { ...raw, damage } as unknown as BaselineStats;
 }
 
+/**
+ * Per-lane pick distribution from a counters-route payload (M7.0).
+ * Invariants: exactly one host object carries a `lanes` field alongside
+ * `cid` (verified across three payloads incl. the vslane variant); the
+ * distribution covers exactly the five lanes with finite shares summing
+ * to ~100 (observed 99.9 — rounding of one-decimal values).
+ */
+export function extractLanes(payload: QDataPayload): Record<Lane, number> {
+  const hosts = payload.objs.filter(
+    (o): o is Record<string, unknown> => isPlainObject(o) && "lanes" in o && "cid" in o,
+  );
+  if (hosts.length !== 1) {
+    violate("lanes-host", `expected exactly 1 lanes host object, found ${hosts.length}`);
+  }
+  const lanes = materialize(payload, hosts[0]!["lanes"], "$.lanes");
+  if (!isPlainObject(lanes)) violate("lanes-shape", "lanes did not materialize to an object");
+  const keys = Object.keys(lanes).sort();
+  if (keys.join(",") !== [...LANES].sort().join(",")) {
+    violate("lanes-keys", `expected exactly the five lanes, got [${keys.join(",")}]`);
+  }
+  let sum = 0;
+  for (const lane of LANES) {
+    const v = lanes[lane];
+    if (typeof v !== "number" || !Number.isFinite(v) || v < 0) {
+      violate("lanes-numeric", `${lane} resolved to ${typeof v}`);
+    }
+    sum += v;
+  }
+  if (sum < 95 || sum > 101) {
+    violate("lanes-sum", `pick shares sum to ${sum.toFixed(1)}, expected ~100 — distribution semantics drifted`);
+  }
+  return lanes as unknown as Record<Lane, number>;
+}
+
 const MATCHUP_KEYS = ["cid", "vsWr", "n", "d1", "d2", "allWr", "defaultLane"] as const;
 
 /**

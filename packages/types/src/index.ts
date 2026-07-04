@@ -167,6 +167,13 @@ export interface Shard {
   synergy: Partial<Record<Lane, SynergyRow[]>>;
   /** Champion-level item builds (M6a). Optional: pre-M6a shards lack it. */
   builds?: ChampionBuilds;
+  /**
+   * Per-lane pick share % (M7.0, from the counters payload's lanes field).
+   * The champion-role prior that M7.3's enemy-role inference leans on —
+   * load-bearing, per PC-M7-3 (the LCU exposes no enemy positions).
+   * Optional: pre-M7.0 shards lack it.
+   */
+  lanes?: Record<Lane, number>;
 }
 
 /** A champion assigned to a lane on the draft board. */
