@@ -36,6 +36,13 @@ export interface BoardSlot {
   index: number; // 0–4 per side; ally 0 is the pick slot
   lane: Lane;
   cid: number | null;
+  /**
+   * Present iff the lane is an inference, not a human choice (AC-M7-8):
+   * the board renders it visibly-as-guess with its evidence (the pick
+   * share). A manual setLane() MUST clear it — the one-action correction.
+   * ManualProvider never sets it; LcuProvider (M7.4) does.
+   */
+  inferred?: { share: number };
 }
 
 const DEFAULT_LANES: Lane[] = ["top", "jungle", "middle", "bottom", "support"];
@@ -72,6 +79,7 @@ export class ManualProvider implements BoardSource {
     const slot = this.#slots.find((s) => s.side === side && s.index === index);
     if (slot) {
       slot.lane = lane;
+      delete slot.inferred; // a human chose: the guess marking must not survive (AC-M7-8)
       this.#emit();
     }
   }

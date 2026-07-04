@@ -8,3 +8,4 @@ export { phaseBreakdown, type PhaseBreakdown, type PhaseRate } from "./phase.js"
 export { DEFAULT_CONFIG, scorePick, type PickScore, type RateCell, type ScoreCells, type ScoreComponent, type ScoreConfig } from "./score.js";
 export { selectCells, type ShardIndex } from "./select.js";
 export { MIN_PROFILES, TEAM_SIZE, evaluateItemRules, type EnemyProfile, type ItemRecommendation, type ItemRule, type RuleTrigger } from "./itemrules.js";
+export { INFERENCE_THRESHOLD, inferEnemyRoles, type EnemyToInfer, type InferredRole } from "./infer.js";

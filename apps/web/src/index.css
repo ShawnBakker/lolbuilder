@@ -13,6 +13,8 @@ h1 { margin-bottom: 0; }
 .slot .who { flex: 1; }
 .slot em { color: #5d6875; }
 .slot button { background: none; border: none; color: #8b96a5; cursor: pointer; }
+.slot select.inferred-lane { border-color: #a06a2c; border-style: dashed; }
+.inferred-badge { font-size: 0.72rem; color: #c9a15e; border: 1px dashed #a06a2c; border-radius: 4px; padding: 0 0.35rem; }
 .search input { width: 100%; padding: 0.5rem 0.75rem; background: #1b212b; color: inherit; border: 1px solid #2a3340; border-radius: 6px; box-sizing: border-box; }
 .results { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
 .results button { background: #223047; color: inherit; border: 1px solid #33456a; border-radius: 6px; padding: 0.3rem 0.7rem; cursor: pointer; }

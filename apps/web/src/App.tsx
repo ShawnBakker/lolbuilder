@@ -6,6 +6,7 @@ import { DISCLOSURE, describeConfidence, ratingToPct, tierFor } from "./display.
 import { BuildPanel } from "./BuildPanel.js";
 import { loadItems } from "./items.js";
 import { ManualProvider, type BoardSlot, type BoardSource } from "./provider.js";
+import { SlotRow } from "./SlotRow.js";
 
 // Typed against the contract, not the concrete class (AC-M7-1b): all seven
 // board call sites below flow through BoardSource. M7.4's provider
@@ -130,40 +131,18 @@ export default function App() {
             {provider
               .slots()
               .filter((s) => s.side === side)
-              .map((slot) => {
-                const champ = slot.cid !== null ? byCid.get(slot.cid) : null;
-                const isSel = selected.side === side && selected.index === slot.index;
-                const isPick = side === "ally" && slot.index === 0;
-                return (
-                  <div key={slot.index} className={`slot ${isSel ? "sel" : ""}`} onClick={() => setSelected({ side, index: slot.index })}>
-                    <select
-                      value={slot.lane}
-                      onChange={(e) => provider.setLane(side, slot.index, e.target.value as Lane)}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {LANES.map((l) => (
-                        <option key={l} value={l}>
-                          {l}
-                        </option>
-                      ))}
-                    </select>
-                    <span className="who">
-                      {isPick ? "★ " : ""}
-                      {champ ? champ.name : <em>empty{isPick ? " — your pick" : ""}</em>}
-                    </span>
-                    {champ && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          provider.assign(side, slot.index, null);
-                        }}
-                      >
-                        ×
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
+              .map((slot) => (
+                <SlotRow
+                  key={slot.index}
+                  slot={slot}
+                  champName={slot.cid !== null ? (byCid.get(slot.cid)?.name ?? String(slot.cid)) : null}
+                  isPick={side === "ally" && slot.index === 0}
+                  isSelected={selected.side === side && selected.index === slot.index}
+                  onSelect={() => setSelected({ side, index: slot.index })}
+                  onSetLane={(lane) => provider.setLane(side, slot.index, lane)}
+                  onClear={() => provider.assign(side, slot.index, null)}
+                />
+              ))}
           </div>
         ))}
       </section>
