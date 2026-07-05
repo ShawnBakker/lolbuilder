@@ -9,22 +9,40 @@
  */
 import { createServer, type Server } from "node:http";
 import { HELPER_PROTOCOL, HELPER_VERSION } from "./version.js";
+import { CalibrationStore } from "./calibration-store.js";
+import { resolvePlatform } from "./platform.js";
 import { logError } from "./sanitize.js";
 import { validateSession } from "./validate.js";
 
 export const PORT = 27437;
 export const ORIGIN = "https://shawnbakker.github.io";
+const MAX_BODY = 64 * 1024;
 
 export interface LcuBridge {
   /** null = no client (no lockfile); otherwise a GET against the LCU. */
   get(path: string): Promise<{ status: number; body: string }> | null;
 }
 
-export function createHelperServer(bridge: LcuBridge): Server {
+function readBody(req: import("node:http").IncomingMessage): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    req.on("data", (c) => {
+      body += c;
+      if (body.length > MAX_BODY) {
+        req.destroy();
+        reject(new Error("body too large"));
+      }
+    });
+    req.on("end", () => resolve(body));
+    req.on("error", reject);
+  });
+}
+
+export function createHelperServer(bridge: LcuBridge, store: CalibrationStore = new CalibrationStore()): Server {
   return createServer(async (req, res) => {
     const cors = {
       "Access-Control-Allow-Origin": ORIGIN,
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "*",
       "Access-Control-Allow-Private-Network": "true",
       "Access-Control-Max-Age": "600",
@@ -68,6 +86,22 @@ export function createHelperServer(bridge: LcuBridge): Server {
           return json(502, { state: "unrecognized-payload", invariant: result.invariant });
         }
         return json(200, { state: "in-champ-select", helperVersion: HELPER_VERSION, protocol: HELPER_PROTOCOL, session: result.session });
+      }
+
+      if (req.url === "/calibration-log" && req.method === "POST") {
+        // The calibration write channel (spec AC-C-1b): a LOCAL surface
+        // between our own frontend and this helper. The read-only hard
+        // line (no writes to the LCU or any RIOT surface) is untouched —
+        // see the rescoped invariant test.
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(await readBody(req));
+        } catch {
+          return json(400, { state: "invalid-entry", invariant: "entry-json" });
+        }
+        const platform = await resolvePlatform((p) => bridge.get(p));
+        const result = store.append(parsed, platform);
+        return json(result.state === "invalid-entry" ? 400 : 200, { ...result, protocol: HELPER_PROTOCOL });
       }
 
       json(404, { state: "unknown-route" });

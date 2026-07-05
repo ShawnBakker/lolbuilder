@@ -40,6 +40,8 @@ const session = (theirTeam: unknown[], over: HelperBody = {}): HelperBody => ({
     theirTeam,
     localPlayerCellId: 0,
     timerPhase: "BAN_PICK",
+    gameId: 111222333,
+    queueId: 400,
   },
   ...over,
 });

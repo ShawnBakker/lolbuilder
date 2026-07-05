@@ -3,18 +3,29 @@
  * (AC-M7-4), state machine for every degradation path (feeds AC-M7-9), and
  * the AC-M7-6 guarantee that unrecognized payloads are named, not forwarded.
  */
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Server } from "node:http";
+import { CALIBRATION_SCHEMA } from "@lolbuilder/types";
+import { CalibrationStore } from "../src/calibration-store.js";
 import { createHelperServer, ORIGIN, type LcuBridge } from "../src/server.js";
 
 let server: Server | null = null;
+let storeDir: string | null = null;
 const start = (bridge: LcuBridge): Promise<number> =>
   new Promise((resolve) => {
-    server = createHelperServer(bridge);
+    storeDir = mkdtempSync(join(tmpdir(), "calib-srv-"));
+    server = createHelperServer(bridge, new CalibrationStore(storeDir));
     server.listen(0, "127.0.0.1", () => resolve((server!.address() as { port: number }).port));
   });
 
-afterEach(() => new Promise<void>((r) => (server ? server.close(() => r()) : r())));
+afterEach(() => {
+  if (storeDir) rmSync(storeDir, { recursive: true, force: true });
+  storeDir = null;
+  return new Promise<void>((r) => (server ? server.close(() => r()) : r()));
+});
 
 const GOOD_SESSION = JSON.stringify({
   myTeam: [{ cellId: 0, championId: 266, assignedPosition: "top" }],
@@ -22,6 +33,8 @@ const GOOD_SESSION = JSON.stringify({
   actions: [[{ type: "pick", championId: 21, completed: true, isAllyAction: false }]],
   timer: { phase: "BAN_PICK" },
   localPlayerCellId: 0,
+  gameId: 5594749083,
+  queueId: 400,
 });
 
 describe("helper server", () => {
@@ -71,5 +84,38 @@ describe("helper server", () => {
     expect((JSON.parse(body) as { invariant: string }).invariant).toBe("team-shape");
     expect(body).not.toContain("SECRET_MARKER"); // raw payload never forwarded
     vi.restoreAllMocks();
+  });
+
+  it("POST /calibration-log: logs, dedupes, rejects non-matchmade and malformed — the C.0 write channel", async () => {
+    const port = await start({ get: () => null }); // no client -> platform resolves null, entry still logs
+    const entry = {
+      schema: CALIBRATION_SCHEMA,
+      gameId: 123456789,
+      queueId: 400,
+      phase: "at-pick",
+      rating: 0.07,
+      draft: { pick: { cid: 266, lane: "top" }, allies: [], enemies: [] },
+      enemiesVisible: 1,
+      alliesVisible: 4,
+      lockedAt: "2026-07-04T22:00:00Z",
+    };
+    const post = (body: unknown) =>
+      fetch(`http://127.0.0.1:${port}/calibration-log`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+
+    const first = (await (await post(entry)).json()) as { state: string };
+    expect(first.state).toBe("logged");
+    const dup = (await (await post(entry)).json()) as { state: string };
+    expect(dup.state).toBe("duplicate");
+    const custom = (await (await post({ ...entry, gameId: 5, queueId: 3140 })).json()) as { state: string };
+    expect(custom.state).toBe("rejected-queue");
+    const bad = await post({ nonsense: true });
+    expect(bad.status).toBe(400);
+    expect(((await bad.json()) as { state: string }).state).toBe("invalid-entry");
+
+    const lines = readFileSync(join(storeDir!, "calibration-log.jsonl"), "utf8").trim().split("\n");
+    expect(lines).toHaveLength(1); // only the first logged
+    const written = JSON.parse(lines[0]!) as Record<string, unknown>;
+    expect(written["gameId"]).toBe(123456789);
+    expect(written["platform"]).toBeNull(); // fail-soft, C.1 skips loudly
   });
 });

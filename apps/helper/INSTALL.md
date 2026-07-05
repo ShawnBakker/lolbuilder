@@ -6,9 +6,14 @@ ten champion names. That's all it does.
 
 ## What it does — and doesn't — do (the honest part)
 
-- **Reads only.** It looks at your champ-select screen through the League
-  client's own local interface. It cannot pick, ban, chat, accept queues, or
-  change anything — the code contains no write operations at all.
+- **Reads only, as far as League is concerned.** It looks at your
+  champ-select screen through the League client's own local interface. It
+  cannot pick, ban, chat, accept queues, or change anything in the game or
+  your account — the code contains no operations that send anything TO the
+  League client or any Riot service. The one thing it writes is a small
+  stats log file on your own machine (`lolbuilder\calibration-log.jsonl`
+  under your local app data), which records the tool's own predictions so
+  it can be honest later about whether they tracked your results.
 - **Local only.** It talks to two things: the League client on your own PC,
   and the lolbuilder page open in your browser. It sends nothing anywhere
   else. No accounts, no passwords, no telemetry.

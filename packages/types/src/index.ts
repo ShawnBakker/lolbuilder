@@ -11,8 +11,38 @@ export * from "./patch.js";
  * sides cannot drift silently: the helper reports it on every response and
  * the frontend refuses (visibly, with an explanation) on mismatch. Bump on
  * any breaking change to the helper's HTTP surface.
+ * (The /calibration-log POST added in C.0 is additive: old helpers simply
+ * lack the route and fire-and-forget capture fails harmlessly — protocol
+ * stays 1.)
  */
 export const HELPER_PROTOCOL = 1;
+
+/** Calibration log entry schema version (append-forever data — spec C.0). */
+export const CALIBRATION_SCHEMA = 1;
+
+/** Matchmade queues eligible for the calibration sample (AC-C-3). */
+export const MATCHMADE_QUEUES = [400, 420, 440] as const;
+
+/**
+ * One calibration log entry (spec AC-C-1, OI-C-3 confirmed). The frontend
+ * constructs and POSTs it; the helper validates, enriches with `platform`
+ * (+ receivedAt), and appends to the local JSONL log. Both at-pick and
+ * finalization phases produce one entry each per game.
+ */
+export interface CalibrationEntryV1 {
+  schema: typeof CALIBRATION_SCHEMA;
+  gameId: number;
+  queueId: number;
+  phase: "at-pick" | "finalization";
+  /** The engine rating (logit units) at the capture moment. */
+  rating: number;
+  /** The DraftState that was scored (role-known enemies only). */
+  draft: DraftState;
+  /** Information level at capture — lets at-pick stratify later (OI-C-3). */
+  enemiesVisible: number;
+  alliesVisible: number;
+  lockedAt: string;
+}
 
 /** Numeric champion id — how lolalytics *responses* key champions. */
 export type ChampionId = number;

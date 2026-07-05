@@ -38,6 +38,19 @@ interface HelperSession {
   theirTeam: Array<{ cellId: number; championId: number; assignedPosition: string }>;
   localPlayerCellId: number;
   timerPhase: string;
+  gameId: number;
+  queueId: number;
+}
+
+/** Live-session metadata for calibration capture (C.0). Null unless live. */
+export interface LiveMeta {
+  gameId: number;
+  queueId: number;
+  phase: string;
+  /** Local player's locked championId, 0 while still picking. */
+  ownChampionId: number;
+  enemiesVisible: number;
+  alliesVisible: number;
 }
 
 /** LCU position names → our lanes ("utility" is support; unknowns ignored). */
@@ -68,6 +81,21 @@ export class LcuProvider implements BoardSource {
 
   status(): LcuStatus {
     return this.#status;
+  }
+
+  /** Calibration capture reads this (C.0); null in every non-live state. */
+  liveMeta(): LiveMeta | null {
+    if (!this.#session) return null;
+    const s = this.#session;
+    const you = s.myTeam.find((p) => p.cellId === s.localPlayerCellId);
+    return {
+      gameId: s.gameId,
+      queueId: s.queueId,
+      phase: s.timerPhase,
+      ownChampionId: you?.championId ?? 0,
+      enemiesVisible: s.theirTeam.filter((p) => p.championId > 0).length,
+      alliesVisible: s.myTeam.filter((p) => p.championId > 0).length,
+    };
   }
 
   start(): void {

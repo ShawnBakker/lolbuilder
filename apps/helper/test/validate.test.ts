@@ -14,6 +14,8 @@ const GOOD = {
   actions: [[{ type: "pick", championId: 21, completed: true, isAllyAction: false }]],
   timer: { phase: "BAN_PICK" },
   localPlayerCellId: 0,
+  gameId: 5594749083,
+  queueId: 400,
 };
 
 describe("validateSession (AC-M7-6)", () => {
@@ -21,6 +23,8 @@ describe("validateSession (AC-M7-6)", () => {
     const r = validateSession(GOOD);
     expect(r.ok).toBe(true);
     if (r.ok) {
+      expect(r.session.gameId).toBe(5594749083); // preserved for calibration (AC-C-1)
+      expect(r.session.queueId).toBe(400);
       expect(r.session.theirTeam[0]!.championId).toBe(21);
       expect(r.session.timerPhase).toBe("BAN_PICK");
       expect(r.session.actions[0]![0]!.isAllyAction).toBe(false);
@@ -37,6 +41,8 @@ describe("validateSession (AC-M7-6)", () => {
     ["timer-shape", { ...GOOD, timer: { phase: 7 } }],
     ["timer-shape", { ...GOOD, timer: undefined }],
     ["session-shape", { ...GOOD, localPlayerCellId: "zero" }],
+    ["session-shape", { ...GOOD, gameId: undefined }],
+    ["session-shape", { ...GOOD, queueId: "ranked" }],
   ])("names the violated invariant: %s", (invariant, payload) => {
     const r = validateSession(payload);
     expect(r.ok).toBe(false);

@@ -24,6 +24,6 @@ server.listen(PORT, "127.0.0.1", () => {
   const creds = findLockfile();
   if (creds) armRedaction(creds.password);
   log(`lolbuilder helper v${HELPER_VERSION} listening on http://127.0.0.1:${PORT}`);
-  log(`serving champ-select state to ${ORIGIN} — read-only, local-only`);
+  log(`serving champ-select state to ${ORIGIN} — reads your client, never writes to it; the only write is the local calibration log`);
   log(creds ? `League client found (lockfile: ${creds.path})` : "League client not detected yet — will connect when it starts");
 });

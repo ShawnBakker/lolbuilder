@@ -18,6 +18,10 @@ export interface ValidSession {
   actions: Array<Array<{ type: string; championId: number; completed: boolean; isAllyAction: boolean }>>;
   timerPhase: string;
   localPlayerCellId: number;
+  /** Preserved for calibration (AC-C-1): the Match-V5 join key. */
+  gameId: number;
+  /** Preserved for calibration (AC-C-3): the matchmade filter key. */
+  queueId: number;
 }
 
 export type ValidationResult = { ok: true; session: ValidSession } | { ok: false; invariant: string; detail: string };
@@ -65,6 +69,8 @@ export function validateSession(raw: unknown): ValidationResult {
     return fail("timer-shape", "timer.phase missing or not a string");
   }
   if (!Number.isInteger(s["localPlayerCellId"])) return fail("session-shape", "localPlayerCellId missing");
+  if (!Number.isInteger(s["gameId"])) return fail("session-shape", "gameId missing or not an integer");
+  if (!Number.isInteger(s["queueId"])) return fail("session-shape", "queueId missing or not an integer");
 
   return {
     ok: true,
@@ -74,6 +80,8 @@ export function validateSession(raw: unknown): ValidationResult {
       actions,
       timerPhase: (timer as Record<string, unknown>)["phase"] as string,
       localPlayerCellId: s["localPlayerCellId"] as number,
+      gameId: s["gameId"] as number,
+      queueId: s["queueId"] as number,
     },
   };
 }

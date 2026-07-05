@@ -5,6 +5,7 @@ import { checkStale, getLoaded, getLoadedVersion, loadManifest, subscribeLoaded,
 import { DISCLOSURE, describeConfidence, ratingToPct, tierFor } from "./display.js";
 import { BuildPanel } from "./BuildPanel.js";
 import { loadItems } from "./items.js";
+import { CaptureController } from "./calibration.js";
 import { LcuProvider, type LcuStatus } from "./lcu-provider.js";
 import { ManualProvider, type BoardSlot, type BoardSource } from "./provider.js";
 import { SlotRow } from "./SlotRow.js";
@@ -65,7 +66,14 @@ export default function App() {
   useEffect(() => {
     if (mode !== "lcu") return;
     lcuProvider.start();
-    return () => lcuProvider.stop();
+    // Calibration capture (C.0): rides the provider's notifications;
+    // fire-and-forget by construction — can never affect the board.
+    const capture = new CaptureController(getLoaded);
+    const unsub = lcuProvider.subscribe(() => capture.onUpdate(lcuProvider));
+    return () => {
+      unsub();
+      lcuProvider.stop();
+    };
   }, [mode]);
 
   useEffect(() => {

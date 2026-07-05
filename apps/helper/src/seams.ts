@@ -24,20 +24,9 @@ export function fetchMatchupBuild(_req: MatchupBuildRequest): never {
 }
 
 /**
- * SEAM 2 — calibration local-log (the v2 feature that needs local
- * persistence; the no-database decision flagged this as its one exception).
- * Append-only JSONL on the friend's machine: predicted rating at lock-in,
- * joined later with the actual result via Match-V5 (needs the PC-5 key —
- * which this helper deliberately does NOT touch in M7).
+ * SEAM 2 — calibration local-log: REALIZED at C.0 (2026-07-04). The stub
+ * that lived here became `calibration-store.ts` + the `/calibration-log`
+ * POST route (see the calibration spec, AC-C-1/1b/2/3). Kept as a pointer
+ * so the seam's history is findable; the remaining seam in this file is
+ * the vs-route build fetch only.
  */
-export interface CalibrationEntry {
-  gameId: number;
-  patch: string;
-  pickCid: number;
-  rating: number;
-  lockedAt: string;
-}
-
-export function appendCalibrationEntry(_entry: CalibrationEntry): never {
-  throw new Error("not implemented: calibration logging is a post-M7 milestone (spec F-M7-7; seam only)");
-}
