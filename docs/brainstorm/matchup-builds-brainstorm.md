@@ -89,9 +89,10 @@ invariant explicitly, don't erode it:
 
 ## 6. Pre-spec checklist
 
-- **PC-MB-1:** shape stability — one more live pair capture (different
-  champions) confirming the vs-items variant shape; ~2 polite requests.
-  (The fixture covers one pair, one day.)
+- **PC-MB-1: ✅ PASSED (2026-07-05).** Second pair probed live (lulu vs
+  blitzcrank — support class, vs the fixture's top-lane pair): HTTP 200,
+  exactly one {pick,win} pair, the item1-6+start variant present, ZERO
+  core-bearing keysets. Shape stable across role classes and days.
 - **PC-MB-2:** decide Q1 (proxy vs parse) — spec locks it.
 - **PC-MB-3:** confirm the per-minute fetch cap value.
 

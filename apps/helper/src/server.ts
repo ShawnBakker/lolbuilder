@@ -86,20 +86,23 @@ export function createHelperServer(bridge: LcuBridge, store: CalibrationStore = 
       }
 
       if (req.url === "/champ-select") {
+        // Every state carries helperVersion so the frontend's
+        // check-and-prompt works even when idle (not just mid-draft).
+        const v = { helperVersion: HELPER_VERSION, protocol: HELPER_PROTOCOL };
         const probe = bridge.get("/lol-champ-select/v1/session");
-        if (!probe) return json(503, { state: "client-not-running" });
+        if (!probe) return json(503, { state: "client-not-running", ...v });
         const r = await probe.catch(() => null);
-        if (!r) return json(503, { state: "client-unreachable" });
-        if (r.status === 404) return json(200, { state: "not-in-champ-select" });
-        if (r.status !== 200) return json(502, { state: "lcu-error", status: r.status });
+        if (!r) return json(503, { state: "client-unreachable", ...v });
+        if (r.status === 404) return json(200, { state: "not-in-champ-select", ...v });
+        if (r.status !== 200) return json(502, { state: "lcu-error", status: r.status, ...v });
 
         const result = validateSession(JSON.parse(r.body));
         if (!result.ok) {
           // AC-M7-6: loud, named, and the raw payload is NOT forwarded.
           logError(`champ-select payload violated [${result.invariant}]: ${result.detail} — serving unrecognized-payload, NOT the data`);
-          return json(502, { state: "unrecognized-payload", invariant: result.invariant });
+          return json(502, { state: "unrecognized-payload", invariant: result.invariant, ...v });
         }
-        return json(200, { state: "in-champ-select", helperVersion: HELPER_VERSION, protocol: HELPER_PROTOCOL, session: result.session });
+        return json(200, { state: "in-champ-select", ...v, session: result.session });
       }
 
       if (req.url === "/calibration-log" && req.method === "POST") {

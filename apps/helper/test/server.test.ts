@@ -63,9 +63,11 @@ describe("helper server", () => {
     expect(typeof noClient.protocol).toBe("number"); // AC-M7-14 handshake field
   });
 
-  it("/champ-select degradation states are named: client-not-running / not-in-champ-select / lcu-error", async () => {
+  it("/champ-select degradation states are named: client-not-running / not-in-champ-select / lcu-error — and every state carries helperVersion (check-and-prompt)", async () => {
     let port = await start({ get: () => null });
-    expect(((await (await fetch(`http://127.0.0.1:${port}/champ-select`)).json()) as { state: string }).state).toBe("client-not-running");
+    const notRunning = (await (await fetch(`http://127.0.0.1:${port}/champ-select`)).json()) as { state: string; helperVersion?: string };
+    expect(notRunning.state).toBe("client-not-running");
+    expect(typeof notRunning.helperVersion).toBe("string"); // version visible even while idle
     await new Promise<void>((r) => server!.close(() => r()));
 
     port = await start({ get: () => Promise.resolve({ status: 404, body: "" }) });

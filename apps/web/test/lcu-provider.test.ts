@@ -105,6 +105,17 @@ describe("version handshake (AC-M7-14) — the weeks-later failure, tested now",
     expect(lcu.status()).toEqual({ kind: "version-mismatch", helperProtocol: 999, expected: 1 });
     expect(lcu.slots()).toBe(manual.slots()); // the mismatched session never reached the board
   });
+
+  it("check-and-prompt: an older-but-compatible helper keeps WORKING and surfaces an update prompt", async () => {
+    helperBody = { state: "not-in-champ-select", helperVersion: "0.1.0", protocol: 1 };
+    const { lcu } = await fresh();
+    await lcu.pollOnce();
+    expect(lcu.status()).toEqual({ kind: "not-in-champ-select" }); // advisory, not blocking
+    expect(lcu.helperUpdate()).toEqual({ installed: "0.1.0", latest: "0.2.0" });
+    helperBody = { state: "not-in-champ-select", helperVersion: "0.2.0", protocol: 1 };
+    await lcu.pollOnce();
+    expect(lcu.helperUpdate()).toBeNull(); // current helper: no prompt
+  });
 });
 
 describe("live chain: session → inference → marking → scoring exclusion", () => {

@@ -39,3 +39,45 @@ Given a partial draft (some allies locked, some enemies locked, a role still ope
 - How many candidates shown by default (5? 10? all with a "show more")?
 - Does role-tier-shard (option A) get its own cache/refresh cadence, or piggyback the existing per-patch pipeline run exactly?
 - Any interaction with the v2 LCU provider — champ-select bans are known live from the client; this feature gets much better once that lands. Worth designing so it degrades gracefully (manual ban entry now, auto-populated later) rather than assuming LCU from day one.
+
+---
+
+# In-repo grounding addendum (CC, 2026-07-05 — the brainstorm predates M7; several premises have moved)
+
+1. **Bans are already transported.** §2/§6 assumed bans were future-LCU
+   work. PC-M7-3 observed them live (they live in the ACTIONS array, not
+   `session.bans` — which stays empty), and the helper's validator already
+   normalizes and serves ban actions (`type: "ban"`, championId,
+   completed, isAllyAction). LCU-mode ban input is a provider read, not
+   new plumbing; only the manual-entry fallback and the input-type
+   modeling remain design work.
+
+2. **The sibling-type leaning (§4) got a hard new argument: the
+   calibration log stores `DraftState` verbatim.** Extending DraftState
+   with `bans` now churns an append-forever store mid-accumulation
+   (schema-version machinery exists, but avoid needing it). A sibling
+   input type (`SuggestionContext` wrapping DraftState + bans + openRole)
+   keeps v1's contract AND the log untouched. The leaning should become
+   the decision at /spec.
+
+3. **The candidate pool has a principled definition now.** M7.0's `lanes`
+   field (per-champion role pick-share) makes "viable pool for role R" =
+   champions with meaningful share in R — the same prior inference leans
+   on, no new data.
+
+4. **Option A's role-tier shard needs one honesty caveat:** shards carry
+   the DEFAULT-lane baseline only; per-role WR for off-role champions was
+   never validated (`?lane=` params unprobed). A coarse role-tier file can
+   rank default-lane champions cleanly + flag flexes via lanes-share, but
+   claiming off-role WR would exceed the validated data. The spec should
+   scope Option A's ranking to what the shards actually know.
+
+5. **Perf numbers still hold:** shards measure 54–87KB (current publish);
+   30–40 candidates ≈ 2–3.4MB — §3's arithmetic stands. Option A remains
+   the recommended default; the "loop over scorePick" claim is proven code
+   (the OI-4 sweep is literally that loop).
+
+**Status: spec-ready.** The four resolutions the spec must lock: sibling
+type (per #2), pool-by-lanes-share (per #3), Option A scoped to
+default-lane ranking (per #4), and the reasoning-per-candidate AC (§5,
+unchanged).

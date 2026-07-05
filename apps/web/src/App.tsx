@@ -171,6 +171,11 @@ export default function App() {
         {mode === "lcu" && (
           <span className={`lcu-status ${lcuProvider.status().kind === "live" ? "live" : ""}`} data-v={boardVersion}>
             {statusLine(lcuProvider.status())}
+            {lcuProvider.helperUpdate() && (
+              <em className="helper-update">
+                {" "}· helper v{lcuProvider.helperUpdate()!.installed} — v{lcuProvider.helperUpdate()!.latest} available (re-download helper.zip)
+              </em>
+            )}
           </span>
         )}
       </div>

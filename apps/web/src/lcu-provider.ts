@@ -15,7 +15,7 @@
  * selected silently. User corrections go through RoleOverrides
  * (sticky-until-champion-changes, AC-M7-2b).
  */
-import { HELPER_PROTOCOL, LANES, type DraftState, type Lane } from "@lolbuilder/types";
+import { HELPER_PROTOCOL, HELPER_VERSION, LANES, type DraftState, type Lane } from "@lolbuilder/types";
 import { inferEnemyRoles } from "@lolbuilder/core";
 import { getLoaded, trackLoaded } from "./data.js";
 import { RoleOverrides } from "./overrides.js";
@@ -69,6 +69,7 @@ export class LcuProvider implements BoardSource {
   #status: LcuStatus = { kind: "connecting" };
   #liveSlots: BoardSlot[] | null = null;
   #session: HelperSession | null = null;
+  #helperVersion: string | null = null;
   #version = 0;
   #listeners = new Set<() => void>();
   #timer: ReturnType<typeof setInterval> | null = null;
@@ -81,6 +82,16 @@ export class LcuProvider implements BoardSource {
 
   status(): LcuStatus {
     return this.#status;
+  }
+
+  /**
+   * Check-and-prompt update tier: non-null when the connected helper is
+   * older than the version this frontend shipped with. Advisory only —
+   * an old helper keeps working until a protocol bump says otherwise.
+   */
+  helperUpdate(): { installed: string; latest: string } | null {
+    if (!this.#helperVersion || this.#helperVersion === HELPER_VERSION) return null;
+    return { installed: this.#helperVersion, latest: HELPER_VERSION };
   }
 
   /** Calibration capture reads this (C.0); null in every non-live state. */
@@ -121,6 +132,7 @@ export class LcuProvider implements BoardSource {
       this.#setState({ kind: "no-helper" }, null);
       return;
     }
+    if (typeof body["helperVersion"] === "string") this.#helperVersion = body["helperVersion"];
     const state = String(body["state"] ?? "");
     if (state === "in-champ-select") {
       const protocol = Number(body["protocol"] ?? 0);
@@ -150,7 +162,7 @@ export class LcuProvider implements BoardSource {
     // when a shard loaded without the session changing — observed live
     // 2026-07-04 (Vel'Koz, support 63.6% ≥ threshold, badge never updated).
     const liveSlots = session ? this.#deriveSlots(session) : null;
-    const signature = JSON.stringify({ s: status, slots: liveSlots });
+    const signature = JSON.stringify({ s: status, slots: liveSlots, hv: this.#helperVersion });
     const changed = signature !== this.#lastSignature;
     this.#lastSignature = signature;
     this.#status = status;

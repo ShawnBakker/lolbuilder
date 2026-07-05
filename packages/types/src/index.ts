@@ -17,6 +17,16 @@ export * from "./patch.js";
  */
 export const HELPER_PROTOCOL = 1;
 
+/**
+ * The helper's current version — SHARED so the frontend can run the
+ * check-and-prompt update tier (expansion-decisions): frontend and helper
+ * build from the same commit, so this constant IS the latest release from
+ * the frontend's point of view, and a helper reporting anything older gets
+ * a visible "update available" prompt. No auto-update, no new outbound
+ * surface — the human re-downloads helper.zip.
+ */
+export const HELPER_VERSION = "0.2.0";
+
 /** Calibration log entry schema version (append-forever data — spec C.0). */
 export const CALIBRATION_SCHEMA = 1;
 
