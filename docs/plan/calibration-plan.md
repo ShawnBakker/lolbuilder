@@ -72,3 +72,28 @@ Strict chain — each consumes the prior's output (no log → nothing to fetch; 
 and the declared hardest look: C.0's DoD proves the FULL capture path end to end)
 → /implement C.0 → … → calibration acceptance → the meter runs
 ```
+
+---
+
+## Review-notes (status)
+
+- **Plan review (operator side, 2026-07-04): PASSED.** All four CC additions
+  accepted (schema-version field, verified-not-trusted key rotation,
+  OI-C-3 pulled to C.0, the named sampling decision); coverage 14/14 clean
+  on first pass; strict-chain sequencing confirmed correct at this size;
+  C.0's end-to-end DoD endorsed verbatim as the hardest-look item.
+- **C.0 opens on ONE pending confirmation (operator's, not CC's):** the
+  at-pick score definition (OI-C-3) becomes permanent the moment the first
+  real entry is logged — changing it later forks the dataset. Proposed:
+  "the score at the moment the local player's pick action completes."
+  Alternatives named at review: after-all-allies-pick, or
+  last-score-before-lock-in.
+- **CC input on hardening the definition (whichever is chosen):** at-pick
+  information varies enormously by pick position — a first-pick logs with
+  0–2 enemies visible, a last-pick with 4–5 (observed in both live draft
+  timelines). The at-pick curve therefore mixes low- and high-information
+  predictions. Cheap de-risk: log an `enemiesVisible` count (and ally
+  count) in every entry alongside the rating — context captured at the
+  moment, so the at-pick analysis can be stratified by information level
+  later WITHOUT forking the dataset. This does not change the definition
+  choice; it makes any choice more future-proof, and it costs one integer.
