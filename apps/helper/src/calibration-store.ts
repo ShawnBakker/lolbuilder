@@ -35,6 +35,10 @@ export function validateEntry(raw: unknown): { ok: true; entry: Record<string, u
   if (e["draft"] === null || typeof e["draft"] !== "object") return { ok: false, invariant: "entry-draft" };
   if (!Number.isInteger(e["enemiesVisible"]) || !Number.isInteger(e["alliesVisible"])) return { ok: false, invariant: "entry-visibility" };
   if (typeof e["lockedAt"] !== "string") return { ok: false, invariant: "entry-timestamp" };
+  const ctx = e["context"] as Record<string, unknown> | null;
+  if (ctx === null || typeof ctx !== "object" || typeof ctx["patch"] !== "string" || typeof ctx["kMatchup"] !== "number" || typeof ctx["kSynergy"] !== "number") {
+    return { ok: false, invariant: "entry-context" }; // rating provenance is mandatory — a context-less rating is unpoolable
+  }
   return { ok: true, entry: e };
 }
 

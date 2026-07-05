@@ -98,6 +98,7 @@ describe("helper server", () => {
       enemiesVisible: 1,
       alliesVisible: 4,
       lockedAt: "2026-07-04T22:00:00Z",
+      context: { patch: "16.13", kMatchup: 25, kSynergy: 50 },
     };
     const post = (body: unknown) =>
       fetch(`http://127.0.0.1:${port}/calibration-log`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });

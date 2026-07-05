@@ -42,6 +42,18 @@ export interface CalibrationEntryV1 {
   enemiesVisible: number;
   alliesVisible: number;
   lockedAt: string;
+  /**
+   * The configuration that produced the rating. Ratings are k-dependent
+   * (D8: k is tunable) and dataset-dependent (patch) — entries logged
+   * under different configs are NOT poolable without stratification, so
+   * every entry must carry its own provenance or the first k-tune forks
+   * the dataset silently.
+   */
+  context: {
+    patch: string;
+    kMatchup: number;
+    kSynergy: number;
+  };
 }
 
 /** Numeric champion id — how lolalytics *responses* key champions. */

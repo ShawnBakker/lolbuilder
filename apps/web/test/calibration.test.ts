@@ -10,6 +10,7 @@ import type { LiveMeta } from "../src/lcu-provider.js";
 
 const SHARD = {
   champ: { cid: 266, slug: "aatrox", name: "Aatrox" },
+  patch: "16.13",
   baseline: { cid: 266, lane: "top", defaultLane: "top", patch: "16.13", wr: 51.5, avgWr: 50, pr: 5, br: 3, n: 100_000 },
   matchupsVsLane: { top: [], jungle: [], middle: [], bottom: [], support: [] },
   synergy: {},
@@ -37,6 +38,7 @@ describe("CaptureController", () => {
     expect(body["gameId"]).toBe(111);
     expect(body["enemiesVisible"]).toBe(2); // conditions at CAPTURE time
     expect(typeof body["rating"]).toBe("number");
+    expect(body["context"]).toEqual({ patch: "16.13", kMatchup: 25, kSynergy: 50 }); // rating provenance
   });
 
   it("finalization fires once (GAME_STARTING accepted as fallback), independent of at-pick", async () => {

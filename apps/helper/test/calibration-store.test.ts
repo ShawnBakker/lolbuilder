@@ -27,6 +27,7 @@ const entry = (over: Record<string, unknown> = {}) => ({
   enemiesVisible: 2,
   alliesVisible: 4,
   lockedAt: "2026-07-04T21:00:00Z",
+  context: { patch: "16.13", kMatchup: 25, kSynergy: 50 },
   ...over,
 });
 
@@ -71,6 +72,8 @@ describe("CalibrationStore", () => {
     ["entry-rating", { rating: Infinity }],
     ["entry-visibility", { enemiesVisible: "two" }],
     ["entry-timestamp", { lockedAt: 12345 }],
+    ["entry-context", { context: { patch: "16.13" } }],
+    ["entry-context", { context: null }],
   ])("names the violated invariant: %s", (invariant, over) => {
     const v = validateEntry(entry(over));
     expect(v.ok).toBe(false);

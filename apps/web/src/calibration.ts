@@ -17,7 +17,7 @@
  * authority, this class just avoids obvious duplicate sends.
  */
 import { CALIBRATION_SCHEMA, type DraftState, type Shard } from "@lolbuilder/types";
-import { scorePick, selectCells } from "@lolbuilder/core";
+import { K_MATCHUP, K_SYNERGY, scorePick, selectCells } from "@lolbuilder/core";
 import { HELPER_URL } from "./lcu-provider.js";
 import type { LiveMeta } from "./lcu-provider.js";
 
@@ -74,6 +74,10 @@ export class CaptureController {
       enemiesVisible: meta.enemiesVisible,
       alliesVisible: meta.alliesVisible,
       lockedAt: new Date().toISOString(),
+      // rating provenance: entries logged under different k or patch are
+      // not poolable — the context makes the first k-tune a stratification
+      // instead of a silent dataset fork
+      context: { patch: shard.patch, kMatchup: K_MATCHUP, kSynergy: K_SYNERGY },
     }).catch(() => undefined); // fire-and-forget, structurally
   }
 }
