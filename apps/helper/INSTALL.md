@@ -43,7 +43,7 @@ ten champion names. That's all it does.
      pattern AV tools watch. The two bullet points above are the whole
      story; the source is in the repo if you (or your AV vendor) want to
      look.
-4. You'll see: `lolbuilder helper v0.1.0 listening on http://127.0.0.1:27437`.
+4. You'll see: `lolbuilder helper v0.2.0 listening on http://127.0.0.1:27437`.
    Leave the window open.
 5. Open the lolbuilder site, click **Auto (LCU helper)**. The status line
    tells you the truth at every moment: waiting for League, waiting for

@@ -6,6 +6,6 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-echo Starting the lolbuilder helper (read-only, local-only). Close this window to stop it.
+echo Starting the lolbuilder helper (reads your client, never writes to it). Close this window to stop it.
 node "%~dp0helper.mjs"
 pause
