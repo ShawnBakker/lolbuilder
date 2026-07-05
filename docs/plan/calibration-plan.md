@@ -97,3 +97,9 @@ and the declared hardest look: C.0's DoD proves the FULL capture path end to end
   moment, so the at-pick analysis can be stratified by information level
   later WITHOUT forking the dataset. This does not change the definition
   choice; it makes any choice more future-proof, and it costs one integer.
+- **OI-C-3 CONFIRMED (operator, 2026-07-04): at-pick = the score at the
+  moment the local player's pick action completes (observable as own
+  championId transitioning 0→locked), with whatever enemy info exists
+  then; every entry also logs enemiesVisible + alliesVisible so the
+  at-pick analysis can stratify by information level without forking the
+  dataset. C.0 OPEN.**
