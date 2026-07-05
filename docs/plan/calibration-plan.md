@@ -103,3 +103,12 @@ and the declared hardest look: C.0's DoD proves the FULL capture path end to end
   then; every entry also logs enemiesVisible + alliesVisible so the
   at-pick analysis can stratify by information level without forking the
   dataset. C.0 OPEN.**
+- **C.0 CLOSED (2026-07-05, live DoD met verbatim):** real ranked draft
+  (queueId 420, gameId 5595476472) produced both entries in the log with
+  platform "NA1" (region-locale resolution verified live), full context
+  provenance, ~20ms wire latency, idempotency held. Operator was last
+  pick, so at-pick ≈ finalization this game (definition working as
+  confirmed; enemiesVisible=5 makes it legible). Entries #1 and #2 exist —
+  **the meter is running.** Next: C.1, gated on PC-C-2 (key rotation) —
+  now genuinely load-bearing; this game becomes C.1's first real
+  reconciliation target.
