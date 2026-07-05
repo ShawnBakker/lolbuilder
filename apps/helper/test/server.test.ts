@@ -46,6 +46,15 @@ describe("helper server", () => {
     expect(res.headers.get("access-control-allow-private-network")).toBe("true");
   });
 
+  it("origin allowlist: known origins echo back; unknown origins get the primary (browser blocks them)", async () => {
+    const port = await start({ get: () => null });
+    const dev = await fetch(`http://127.0.0.1:${port}/health`, { headers: { Origin: "http://localhost:5173" } });
+    expect(dev.headers.get("access-control-allow-origin")).toBe("http://localhost:5173");
+    const evil = await fetch(`http://127.0.0.1:${port}/health`, { headers: { Origin: "https://evil.example" } });
+    expect(evil.headers.get("access-control-allow-origin")).toBe(ORIGIN); // not echoed -> cross-origin read blocked
+    expect(evil.headers.get("vary")).toBe("Origin");
+  });
+
   it("/health: no-client and connected states, with helperVersion (AC-M7-14 half)", async () => {
     const port = await start({ get: () => null });
     const noClient = (await (await fetch(`http://127.0.0.1:${port}/health`)).json()) as Record<string, unknown>;

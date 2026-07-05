@@ -15,7 +15,19 @@ import { logError } from "./sanitize.js";
 import { validateSession } from "./validate.js";
 
 export const PORT = 27437;
-export const ORIGIN = "https://shawnbakker.github.io";
+/**
+ * Origin ALLOWLIST (expansion-decisions action item, 2026-07-05): a single
+ * hardcoded origin baked into every distributed helper makes a future
+ * domain migration a fleet-wide break. The list makes it a one-line edit.
+ * First entry is the primary (used when no/unknown Origin — e.g. curl);
+ * localhost entries serve local dev only and are loopback-bound anyway.
+ */
+export const ALLOWED_ORIGINS = [
+  "https://shawnbakker.github.io",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+] as const;
+export const ORIGIN = ALLOWED_ORIGINS[0];
 const MAX_BODY = 64 * 1024;
 
 export interface LcuBridge {
@@ -40,12 +52,14 @@ function readBody(req: import("node:http").IncomingMessage): Promise<string> {
 
 export function createHelperServer(bridge: LcuBridge, store: CalibrationStore = new CalibrationStore()): Server {
   return createServer(async (req, res) => {
+    const requestOrigin = req.headers.origin;
     const cors = {
-      "Access-Control-Allow-Origin": ORIGIN,
+      "Access-Control-Allow-Origin": requestOrigin && (ALLOWED_ORIGINS as readonly string[]).includes(requestOrigin) ? requestOrigin : ORIGIN,
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "*",
       "Access-Control-Allow-Private-Network": "true",
       "Access-Control-Max-Age": "600",
+      Vary: "Origin",
     };
     if (req.method === "OPTIONS") {
       res.writeHead(204, cors);
