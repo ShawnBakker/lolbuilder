@@ -25,10 +25,13 @@ export const HELPER_PROTOCOL = 1;
  * a visible "update available" prompt. No auto-update, no new outbound
  * surface — the human re-downloads helper.zip.
  */
-export const HELPER_VERSION = "0.2.0";
+export const HELPER_VERSION = "0.3.0";
 
 /** Calibration log entry schema version (append-forever data — spec C.0). */
 export const CALIBRATION_SCHEMA = 1;
+
+/** Outcome record schema version (C.1 — calibration-outcomes.jsonl). */
+export const OUTCOME_SCHEMA = 1;
 
 /** Matchmade queues eligible for the calibration sample (AC-C-3). */
 export const MATCHMADE_QUEUES = [400, 420, 440] as const;
