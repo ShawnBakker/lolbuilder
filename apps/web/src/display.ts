@@ -34,6 +34,30 @@ export function describeConfidence(score: PickScore): string {
   return `${level} confidence — weakest cell rests on ${minN.toLocaleString()} games`;
 }
 
+/**
+ * Explain-why (UI pass): one plain-language reading per score component.
+ * Same honesty rules as everywhere: strength words are coarse bands, the
+ * sample size is part of the sentence when it's thin, and direction is
+ * stated from the PLAYER's perspective ("in your favor"), never as a
+ * command.
+ */
+export function describeComponent(kind: string, delta: number, n: number, otherName: string | null): string {
+  const dir = delta >= 0 ? "in your favor" : "against you";
+  const mag = Math.abs(delta);
+  const strength = mag < 0.03 ? "slightly" : mag < 0.08 ? "clearly" : "strongly";
+  const thin = n < 500 ? " (thin data — shrunk hard toward baseline)" : "";
+  switch (kind) {
+    case "baseline":
+      return `this champion's overall ${delta >= 0 ? "above" : "below"}-average win rate in this role${thin}`;
+    case "matchup":
+      return `the lane matchup vs ${otherName ?? "?"} runs ${strength} ${dir}${thin}`;
+    case "synergy":
+      return `pairing with ${otherName ?? "?"} runs ${strength} ${dir}${thin}`;
+    default:
+      return `${strength} ${dir}${thin}`;
+  }
+}
+
 /** AC-19: the "what this can't tell you" disclosure, incl. the phase conditional. */
 export const DISCLOSURE = [
   "This is a ranking heuristic, not a win probability — it compares your options; it does not predict your game.",

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { LANES, type ChampionRef, type Lane } from "@lolbuilder/types";
 import { K_PHASE, phaseBreakdown, scorePick, selectCells, type PickScore } from "@lolbuilder/core";
 import { champIconUrl, checkStale, getLoaded, getLoadedVersion, loadChampionIcons, loadManifest, subscribeLoaded, trackLoaded, type Manifest } from "./data.js";
-import { DISCLOSURE, describeConfidence, ratingToPct, tierFor } from "./display.js";
+import { DISCLOSURE, describeComponent, describeConfidence, ratingToPct, tierFor } from "./display.js";
 import { BuildPanel } from "./BuildPanel.js";
 import { CalibrationCard } from "./CalibrationCard.js";
 import { loadItems } from "./items.js";
@@ -251,6 +251,7 @@ export default function App() {
                 <th>vs/with</th>
                 <th>logit Δ</th>
                 <th>games</th>
+                <th>reading</th>
               </tr>
             </thead>
             <tbody>
@@ -260,6 +261,7 @@ export default function App() {
                   <td>{c.cid ? (byCid.get(c.cid)?.name ?? c.cid) : "—"}</td>
                   <td>{c.delta >= 0 ? "+" : ""}{c.delta.toFixed(2)}</td>
                   <td>{c.n.toLocaleString()}</td>
+                  <td className="reading">{describeComponent(c.kind, c.delta, c.n, c.cid ? (byCid.get(c.cid)?.name ?? null) : null)}</td>
                 </tr>
               ))}
             </tbody>

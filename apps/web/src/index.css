@@ -114,3 +114,4 @@ footer { margin-top: 2.5rem; color: var(--muted); font-size: 0.9rem; border-top:
 footer h3 { color: var(--text); }
 
 @media (max-width: 640px) { .boards { grid-template-columns: 1fr; } }
+.reading { color: var(--muted); font-size: 0.85rem; max-width: 26rem; }
