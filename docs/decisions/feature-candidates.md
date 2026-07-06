@@ -24,7 +24,10 @@ grounding, and the expansion action items.)
    vs-route shape was live-validated (M6a) and the helper seam is stubbed
    (AC-M7-15). Brainstorm drafted 2026-07-05
    (`docs/brainstorm/matchup-builds-brainstorm.md`, CC-drafted → needs an
-   outside review pass per the seam). Named invariant evolution required:
+   outside review pass per the seam). Demand-side grounding landed
+   2026-07-06 (`user-trust-research-2026-07-06.md`: wanted AND distrusted;
+   independent push for the display floor the review brief's item 5
+   already poses). Named invariant evolution required:
    a second outbound surface (lolalytics vs-route) alongside the LCU —
    the "no outgoing requests outside lcu.ts" test rescopes explicitly,
    the AC-C-1b pattern.
@@ -32,7 +35,11 @@ grounding, and the expansion action items.)
    (`pick-suggestion-brainstorm.md`); spec drafted 2026-07-06
    (`docs/spec/pick-suggestion-spec.md`, CC-drafted → out for outside
    review per the seam). Bans modeling simplified by M7 (provider
-   supplies them; manual entry is degradation).
+   supplies them; manual entry is degradation). Demand-side grounding
+   (`user-trust-research-2026-07-06.md`): market converged on ranked
+   shortlists, no organic demand for a single pick — confirms §1 scope;
+   context-blindness is the category's #1 complaint, sharpening the
+   explain-why ACs.
 3. **"Explain WHY" deepening** — first cut LANDED with the C.3 UI pass
    (`describeComponent`: per-component plain-language readings in the
    score table; live-verified 2026-07-06). Anything deeper rides the
