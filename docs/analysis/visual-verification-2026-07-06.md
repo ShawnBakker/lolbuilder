@@ -168,6 +168,14 @@ n=3,599 ≥ 500). Zero non-GET requests during re-verification. Evidence:
 project path) and 404s. One console error on every load. Fix is a
 one-line `<link rel="icon">` + asset whenever convenient.
 
+**Fix pass criteria (defined before the post-deploy probe):**
+(a) served index.html contains a `<link rel="icon">`; (b) a fresh load
+of the deployed site logs **zero** console errors; (c) the network log
+contains **no request to `https://shawnbakker.github.io/favicon.ico`**.
+Fix chosen: inline data-URI SVG (gold hexagon, theme palette) — no new
+asset, no request, immune to the relative-base (`base: "./"`) pitfall
+a root-absolute asset href would hit.
+
 ### Verified-artifact (NOT a finding): full-page screenshot gradient band
 
 Full-page captures (evidence 01, 02) show a hard horizontal band where
