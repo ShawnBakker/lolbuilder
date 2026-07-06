@@ -122,3 +122,13 @@ and the declared hardest look: C.0's DoD proves the FULL capture path end to end
   no refetch). Orphan/403/ambiguity paths unit-tested; the compromised-
   key refusal is enforced in the artifact itself. **Next: C.2 (AUC
   engine) — ungated.**
+- **C.2 CLOSED (2026-07-06, DoD met):** pure statistics in core
+  (auc ties-0.5, stratified seeded percentile bootstrap, ≤3 equal-count
+  reliability buckets); property tests per DoD (perfect ordering → AUC 1
+  with CI excluding 0.5; shuffled labels → CI spanning 0.5; tie handling
+  exact; seed-deterministic; insufficiency carries counts). Dev readout
+  (`pnpm --filter @lolbuilder/helper readout`) ran over the REAL log:
+  2 games, 0W/2L, 0 pairs → "INSUFFICIENT — no number is the honest
+  output," which is the feature working, not failing. **Next: C.3 (the
+  patient card) — bundled with the frontend/UI pass per operator's
+  bare-UI feedback.**

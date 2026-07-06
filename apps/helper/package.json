@@ -7,13 +7,15 @@
     "dev": "tsx src/main.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "bundle": "esbuild src/main.ts --bundle --platform=node --format=esm --outfile=dist/helper.mjs --banner:js=\"// lolbuilder helper — bundled single file. Source: apps/helper in the repo.\""
+    "bundle": "esbuild src/main.ts --bundle --platform=node --format=esm --outfile=dist/helper.mjs --banner:js=\"// lolbuilder helper — bundled single file. Source: apps/helper in the repo.\"",
+    "readout": "tsx src/readout.ts"
   },
   "devDependencies": {
     "@types/node": "^26.1.0",
     "esbuild": "^0.28.1"
   },
   "dependencies": {
-    "@lolbuilder/types": "workspace:*"
+    "@lolbuilder/types": "workspace:*",
+    "@lolbuilder/core": "workspace:*"
   }
 }

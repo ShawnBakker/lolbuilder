@@ -9,3 +9,4 @@ export { DEFAULT_CONFIG, scorePick, type PickScore, type RateCell, type ScoreCel
 export { selectCells, type ShardIndex } from "./select.js";
 export { MIN_PROFILES, TEAM_SIZE, evaluateItemRules, type EnemyProfile, type ItemRecommendation, type ItemRule, type RuleTrigger } from "./itemrules.js";
 export { INFERENCE_THRESHOLD, inferEnemyRoles, type EnemyToInfer, type InferredRole } from "./infer.js";
+export { BOOTSTRAP_ITERATIONS, analyzeCalibration, auc, mulberry32, reliabilityBuckets, type CalibrationAnalysis, type CalibrationSample, type ReliabilityBucket } from "./calibrate.js";

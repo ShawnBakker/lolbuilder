@@ -20,6 +20,9 @@ importers:
 
   apps/helper:
     dependencies:
+      '@lolbuilder/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@lolbuilder/types':
         specifier: workspace:*
         version: link:../../packages/types
