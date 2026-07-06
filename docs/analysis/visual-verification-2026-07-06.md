@@ -176,6 +176,14 @@ Fix chosen: inline data-URI SVG (gold hexagon, theme palette) — no new
 asset, no request, immune to the relative-base (`base: "./"`) pitfall
 a root-absolute asset href would hit.
 
+**FIXED + VERIFIED (e4b8229, deployed via run 28780276006):** all three
+criteria observed on the live site — (a) `<link rel="icon">` in the
+served HTML and DOM; (b) fresh load, `consoleErrors: []`; (c) zero
+favicon-related requests in the network log. **F2 closed.** Deploy note:
+the push-triggered run failed with the same platform-side "Deployment
+failed, try again later" (3 failures / 2 successes today); the
+`workflow_dispatch` recovery play worked on the first try.
+
 ### Verified-artifact (NOT a finding): full-page screenshot gradient band
 
 Full-page captures (evidence 01, 02) show a hard horizontal band where
@@ -204,7 +212,8 @@ All five criteria now PASS on the live site. The initial pass found the
 deploy one commit stale (F1, above) — remediated the same day via
 `workflow_dispatch` after discovering the re-run path is unusable for
 Pages deploys, and verified with the same bundle-grep + live-render
-method that established the finding. Remaining open: F2 (favicon
-one-liner) and the F1 process note (failed Pages deploys are invisible
-without a check — build-sha surfacing or failure notification would
-close that seam).
+method that established the finding. F2 fixed and verified same day
+(e4b8229). Remaining open: the F1 process note (failed Pages deploys
+are invisible without a check — build-sha surfacing or failure
+notification would close that seam; now a board action item), given
+extra weight by the day's tally of three platform-side deploy failures.
