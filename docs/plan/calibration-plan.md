@@ -112,3 +112,13 @@ and the declared hardest look: C.0's DoD proves the FULL capture path end to end
   **the meter is running.** Next: C.1, gated on PC-C-2 (key rotation) —
   now genuinely load-bearing; this game becomes C.1's first real
   reconciliation target.
+- **PC-C-2 CLEARED + C.1 CLOSED (2026-07-06, live DoD met):** key rotated
+  via the Desktop input script (never transited chat), verified by
+  fingerprint (differs from the compromised hash) + live 200. First real
+  reconcile on helper launch resolved BOTH logged games automatically
+  (5595476472 → LOSS, 5595810920 → LOSS) with gold15/xp15 stored — the
+  automated gold@15 values match the earlier manual computations exactly
+  (independent cross-validation). Relaunch confirmed idempotent (2 lines,
+  no refetch). Orphan/403/ambiguity paths unit-tested; the compromised-
+  key refusal is enforced in the artifact itself. **Next: C.2 (AUC
+  engine) — ungated.**
