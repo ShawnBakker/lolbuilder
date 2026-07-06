@@ -111,8 +111,8 @@ describe("version handshake (AC-M7-14) — the weeks-later failure, tested now",
     const { lcu } = await fresh();
     await lcu.pollOnce();
     expect(lcu.status()).toEqual({ kind: "not-in-champ-select" }); // advisory, not blocking
-    expect(lcu.helperUpdate()).toEqual({ installed: "0.1.0", latest: "0.3.0" });
-    helperBody = { state: "not-in-champ-select", helperVersion: "0.3.0", protocol: 1 };
+    expect(lcu.helperUpdate()).toEqual({ installed: "0.1.0", latest: "0.4.0" });
+    helperBody = { state: "not-in-champ-select", helperVersion: "0.4.0", protocol: 1 };
     await lcu.pollOnce();
     expect(lcu.helperUpdate()).toBeNull(); // current helper: no prompt
   });

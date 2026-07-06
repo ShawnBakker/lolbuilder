@@ -129,5 +129,11 @@ describe("helper server", () => {
     const written = JSON.parse(lines[0]!) as Record<string, unknown>;
     expect(written["gameId"]).toBe(123456789);
     expect(written["platform"]).toBeNull(); // fail-soft, C.1 skips loudly
+
+    // C.3 read path: the card's GET serves back what was logged
+    const served = (await (await fetch(`http://127.0.0.1:${port}/calibration-data`)).json()) as { entries: unknown[]; outcomes: unknown[] };
+    expect(served.entries).toHaveLength(1);
+    expect((served.entries[0] as Record<string, unknown>)["gameId"]).toBe(123456789);
+    expect(served.outcomes).toEqual([]); // no reconcile ran in this test
   });
 });

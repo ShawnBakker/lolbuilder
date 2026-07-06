@@ -25,7 +25,7 @@ export const HELPER_PROTOCOL = 1;
  * a visible "update available" prompt. No auto-update, no new outbound
  * surface — the human re-downloads helper.zip.
  */
-export const HELPER_VERSION = "0.3.0";
+export const HELPER_VERSION = "0.4.0";
 
 /** Calibration log entry schema version (append-forever data — spec C.0). */
 export const CALIBRATION_SCHEMA = 1;

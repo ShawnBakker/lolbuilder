@@ -9,7 +9,7 @@
  */
 import { createServer, type Server } from "node:http";
 import { HELPER_PROTOCOL, HELPER_VERSION } from "./version.js";
-import { CalibrationStore } from "./calibration-store.js";
+import { CalibrationStore, readCalibrationData } from "./calibration-store.js";
 import { resolvePlatform } from "./platform.js";
 import { logError } from "./sanitize.js";
 import { validateSession } from "./validate.js";
@@ -103,6 +103,11 @@ export function createHelperServer(bridge: LcuBridge, store: CalibrationStore = 
           return json(502, { state: "unrecognized-payload", invariant: result.invariant, ...v });
         }
         return json(200, { state: "in-champ-select", ...v, session: result.session });
+      }
+
+      if (req.url === "/calibration-data") {
+        // C.3: the report card's read path — local files, served locally.
+        return json(200, { ...readCalibrationData(store.dir), helperVersion: HELPER_VERSION, protocol: HELPER_PROTOCOL });
       }
 
       if (req.url === "/calibration-log" && req.method === "POST") {

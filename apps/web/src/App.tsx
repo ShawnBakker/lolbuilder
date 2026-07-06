@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { LANES, type ChampionRef, type Lane } from "@lolbuilder/types";
 import { K_PHASE, phaseBreakdown, scorePick, selectCells, type PickScore } from "@lolbuilder/core";
-import { checkStale, getLoaded, getLoadedVersion, loadManifest, subscribeLoaded, trackLoaded, type Manifest } from "./data.js";
+import { champIconUrl, checkStale, getLoaded, getLoadedVersion, loadChampionIcons, loadManifest, subscribeLoaded, trackLoaded, type Manifest } from "./data.js";
 import { DISCLOSURE, describeConfidence, ratingToPct, tierFor } from "./display.js";
 import { BuildPanel } from "./BuildPanel.js";
+import { CalibrationCard } from "./CalibrationCard.js";
 import { loadItems } from "./items.js";
 import { CaptureController } from "./calibration.js";
 import { LcuProvider, type LcuStatus } from "./lcu-provider.js";
@@ -76,10 +77,12 @@ export default function App() {
     };
   }, [mode]);
 
+  const [, setIconsReady] = useState(false);
   useEffect(() => {
     void loadManifest().then(async (m) => {
       setManifest(m);
       loadItems(m.ddragon);
+      void loadChampionIcons().then(setIconsReady); // decoration: fails soft
       setStaleInfo(await checkStale(m.patch));
     });
   }, []);
@@ -225,6 +228,7 @@ export default function App() {
         <div className="results">
           {results.map((c, i) => (
             <button key={c.cid} className={i === highlight ? "hl" : ""} onMouseEnter={() => setHighlight(i)} onClick={() => assign(c)}>
+              {champIconUrl(c.cid) && <img className="champ-icon sm" src={champIconUrl(c.cid)!} alt="" width={20} height={20} loading="lazy" />}
               {c.name}
             </button>
           ))}
@@ -282,6 +286,8 @@ export default function App() {
       )}
 
       {pickShard && draft && <BuildPanel shard={pickShard} draft={draft} byCid={byCid} />}
+
+      <CalibrationCard />
 
       <footer>
         <h3>What this can't tell you</h3>

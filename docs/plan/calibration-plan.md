@@ -132,3 +132,16 @@ and the declared hardest look: C.0's DoD proves the FULL capture path end to end
   output," which is the feature working, not failing. **Next: C.3 (the
   patient card) — bundled with the frontend/UI pass per operator's
   bare-UI feedback.**
+- **C.3 CLOSED (2026-07-06, DoD met):** CalibrationCard shipped with the
+  UI pass — CI-first (RangeBar visual: shaded plausible range vs the 0.50
+  no-signal line), display floor 20 (OI-C-1: NO estimate below it),
+  misread guard STRUCTURAL (tests: no percent sign in any card state, no
+  estimate below floor, non-attribution lead precedes every number);
+  rendered states tested for n=0, below-floor (the literal current log),
+  above-floor-inconclusive, synthetic-conclusive, and no-helper. Card
+  reads via the helper's new GET /calibration-data (helper 0.4.0,
+  additive). UI pass per operator direction: DDragon champion icons
+  (cid→id map from the CDN, fail-soft decoration) in slots + search;
+  Rift-evoking CSS backdrop (League palette, layered gradients, no
+  copyrighted bitmap); layout widened; hextech panel styling.
+  **The calibration chain (C.0→C.3) is COMPLETE.**

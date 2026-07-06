@@ -42,13 +42,39 @@ export function validateEntry(raw: unknown): { ok: true; entry: Record<string, u
   return { ok: true, entry: e };
 }
 
+/** Both local files, parsed — the /calibration-data serving shape (C.3). */
+export function readCalibrationData(dir: string = defaultLogDir()): { entries: unknown[]; outcomes: unknown[] } {
+  const read = (name: string): unknown[] => {
+    const f = join(dir, name);
+    if (!existsSync(f)) return [];
+    return readFileSync(f, "utf8")
+      .split("\n")
+      .filter((l) => l.trim())
+      .map((l) => {
+        try {
+          return JSON.parse(l) as unknown;
+        } catch {
+          return null;
+        }
+      })
+      .filter((x) => x !== null);
+  };
+  return { entries: read("calibration-log.jsonl"), outcomes: read("calibration-outcomes.jsonl") };
+}
+
 export class CalibrationStore {
+  #dir: string;
   #file: string;
   #keys: Set<string> | null = null; // lazy-loaded (gameId:phase) index
 
   constructor(dir: string = defaultLogDir()) {
     mkdirSync(dir, { recursive: true });
+    this.#dir = dir;
     this.#file = join(dir, "calibration-log.jsonl");
+  }
+
+  get dir(): string {
+    return this.#dir;
   }
 
   get file(): string {

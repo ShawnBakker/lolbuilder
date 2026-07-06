@@ -6,6 +6,7 @@
  * guess marking (the provider contract guarantees that).
  */
 import { LANES, type Lane } from "@lolbuilder/types";
+import { champIconUrl } from "./data.js";
 import type { BoardSlot } from "./provider.js";
 
 export interface SlotRowProps {
@@ -54,6 +55,9 @@ export function SlotRow({ slot, champName, isPick, isSelected, onSelect, onSetLa
         <span className="inferred-badge" title="This role is a guess from pick-rate data, not from the game. Change the lane to correct it.">
           inferred {Math.round(slot.inferred.share)}%
         </span>
+      )}
+      {slot.cid !== null && champIconUrl(slot.cid) && (
+        <img className="champ-icon" src={champIconUrl(slot.cid)!} alt="" width={30} height={30} loading="lazy" />
       )}
       <span className="who">
         {isPick ? "★ " : ""}

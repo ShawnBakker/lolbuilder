@@ -80,6 +80,36 @@ export function trackLoaded(cid: number): void {
 }
 
 /**
+ * Champion icons (UI pass, 2026-07-06): DDragon square art, keyed by the
+ * DDragon champion id (which diverges from our lolalytics slug — Wukong is
+ * MonkeyKing there). One champion.json fetch builds the cid→id map.
+ * Icons are decoration: every failure path renders the same UI without
+ * them, so this fails soft by construction.
+ */
+let ddragonIdByCid = new Map<number, string>();
+let iconVersion = "";
+
+export async function loadChampionIcons(): Promise<boolean> {
+  if (!manifest || ddragonIdByCid.size > 0) return ddragonIdByCid.size > 0;
+  try {
+    const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${manifest.ddragon}/data/en_US/champion.json`);
+    if (!res.ok) return false;
+    const data = (await res.json()) as { data: Record<string, { key: string; id: string }> };
+    ddragonIdByCid = new Map(Object.values(data.data).map((c) => [Number(c.key), c.id]));
+    iconVersion = manifest.ddragon;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function champIconUrl(cid: number | null): string | null {
+  if (cid === null) return null;
+  const id = ddragonIdByCid.get(cid);
+  return id ? `https://ddragon.leagueoflegends.com/cdn/${iconVersion}/img/champion/${id}.png` : null;
+}
+
+/**
  * AC-18: stale-data check — compare the dataset's patch against the live
  * DDragon manifest (CORS-open CDN), client-side.
  */
