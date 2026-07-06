@@ -70,3 +70,46 @@ converges/does-not-converge call on sending this to /spec.
 One-click import (separate D11 register question), the pipeline (this
 feature adds zero pipeline requests), F8, and anything about whether the
 feature is worth building — the operator queued it; the question is HOW.
+
+---
+
+## Supplementary evidence — forwarded 2026-07-06, after the brief's initial send
+
+**To the reviewer:** this section was added after the brief above went
+out. It is excerpted verbatim from an independently produced
+user-sentiment research report (companion-app trust, League of Legends;
+the report self-declares its source base as MOBAFire, Trustpilot,
+blogs, vendor FAQ text, and competitor benchmarks — directional, not
+established fact). It bears on **attack item 5 (honesty rendering /
+display floor)** and secondarily item 4 (what users do with confident
+small-sample numbers). It is evidence for you to weigh, not a verdict —
+item 5 remains an open question.
+
+Report excerpt (feature-specific finding):
+
+> **Matchup-conditioned builds.** Demand is well established: U.GG's
+> FAQ leans into it — "For example, playing Zed vs Ahri is different
+> than Zed vs Talon. Change the 'Vs Champion' filter to look at what is
+> best in your specific matchup" — and community guides call matchup
+> data "the most underused feature." But statistically literate users
+> flag small-sample noise: guides warn "the biggest error players make
+> involves trusting statistics with insufficient sample sizes," and
+> matchup pages routinely display extreme win rates off tiny samples
+> (e.g., "100% win rate over 19 games" on rare pairings). Both signals
+> are strong and coexist.
+
+Report excerpt (its recommendation on this feature):
+
+> **Ship matchup builds with a hard sample-size gate (~200 games).**
+> Below it, show a confidence range or "insufficient data" and fall
+> back to the general build. Revisit threshold: if user testing shows
+> people ignore the gate and copy tiny-sample builds anyway, tighten it
+> or hide sub-threshold builds entirely.
+
+Factual juxtaposition, no leaning attached: the brief's pre-validated
+section notes observed vs-route slot samples of n = 16–246. Against the
+report's floated ~200-game gate, most observed slots would render as
+"insufficient." Whether that is the honest output, whether the floor
+should be per-slot or per-panel, and what the number should be are
+exactly the item-5 questions — now with demand-side evidence that users
+both want this feature and recognize/mock its small-sample failure mode.
