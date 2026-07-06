@@ -4,3 +4,5 @@ coverage/
 *.tsbuildinfo
 .DS_Store
 tools/pc-m7-3-session-dump*.json
+# Playwright MCP session output (snapshots/console logs land in repo root)
+.playwright-mcp/
